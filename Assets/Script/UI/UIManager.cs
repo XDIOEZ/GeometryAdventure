@@ -1,21 +1,25 @@
-using System.Collections;
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// UIç®¡ç†å™¨ï¼Œè´Ÿè´£ç®¡ç†æ‰€æœ‰UIé¢æ¿çš„æ˜¾ç¤ºã€éšè—å’Œç”Ÿå‘½å‘¨æœŸ
+/// </summary>
 public class UIManager : MonoBehaviour
 {
-    // µ¥ÀıÊµÀı
+    #region Singleton
     private static UIManager _instance;
+    
+    /// <summary>
+    /// è·å–UIManagerå•ä¾‹å®ä¾‹
+    /// </summary>
     public static UIManager Instance 
     { 
         get
         {
-            // Èç¹ûÊµÀı²»´æÔÚ£¬³¢ÊÔ²éÕÒ
             if (_instance == null)
             {
                 _instance = FindObjectOfType<UIManager>();
                 
-                // Èç¹û»¹ÊÇÕÒ²»µ½£¬´´½¨Ò»¸öĞÂµÄ
                 if (_instance == null)
                 {
                     GameObject singletonObject = new GameObject("UIManager");
@@ -25,19 +29,31 @@ public class UIManager : MonoBehaviour
             return _instance;
         }
     }
-    
-    // ´æ´¢ËùÓĞÃæ°åµÄ×Öµä
+    #endregion
+
+    #region Fields
+    /// <summary>
+    /// å­˜å‚¨æ‰€æœ‰é¢æ¿çš„å­—å…¸
+    /// </summary>
     private Dictionary<string, BasePanel> panels = new Dictionary<string, BasePanel>();
     
-    // Ãæ°åµÄ¸¸¶ÔÏó
+    /// <summary>
+    /// é¢æ¿çš„çˆ¶å¯¹è±¡
+    /// </summary>
+    [Tooltip("é¢æ¿çš„çˆ¶å¯¹è±¡")]
     public Transform panelRoot;
     
-    // Ô¤ÖÆÌåÒıÓÃ£¨¿ÉÑ¡£©
+    /// <summary>
+    /// é¢„åˆ¶ä½“å¼•ç”¨ï¼ˆå¯é€‰ï¼‰
+    /// </summary>
+    [Tooltip("é¢æ¿é¢„åˆ¶ä½“å¼•ç”¨")]
     public GameObject[] panelPrefabs;
+    #endregion
 
+    #region Unity Lifecycle
     private void Awake()
     {
-        // È·±£Ö»ÓĞÒ»¸öUIManagerÊµÀı
+        // ç¡®ä¿åªæœ‰ä¸€ä¸ªUIManagerå®ä¾‹
         if (_instance == null)
         {
             _instance = this;
@@ -49,18 +65,18 @@ public class UIManager : MonoBehaviour
             return;
         }
         
-        // ³õÊ¼»¯Ãæ°å×Öµä
         InitializePanels();
     }
+    #endregion
 
+    #region Panel Management
     /// <summary>
-    /// ³õÊ¼»¯ËùÓĞÃæ°å
+    /// åˆå§‹åŒ–æ‰€æœ‰é¢æ¿
     /// </summary>
     private void InitializePanels()
     {
         panels.Clear();
         
-        // ²éÕÒ³¡¾°ÖĞËùÓĞµÄBasePanel×é¼ş
         BasePanel[] allPanels = FindObjectsOfType<BasePanel>(true);
         foreach (BasePanel panel in allPanels)
         {
@@ -70,17 +86,16 @@ public class UIManager : MonoBehaviour
             }
             else
             {
-                // Èç¹û´æÔÚÍ¬ÃûÃæ°å£¬Ìí¼Ó¾¯¸æ
                 Debug.LogWarning($"Duplicate panel name found: {panel.name}");
             }
         }
     }
 
     /// <summary>
-    /// »ñÈ¡Ö¸¶¨Ãû³ÆµÄÃæ°å
+    /// è·å–æŒ‡å®šåç§°çš„é¢æ¿
     /// </summary>
-    /// <param name="panelName">Ãæ°åÃû³Æ</param>
-    /// <returns>BasePanel×é¼ş£¬Èç¹û²»´æÔÚ·µ»Ønull</returns>
+    /// <param name="panelName">é¢æ¿åç§°</param>
+    /// <returns>BasePanelå¯¹è±¡ï¼Œå¦‚æœæœªæ‰¾åˆ°åˆ™è¿”å›null</returns>
     public BasePanel GetPanel(string panelName)
     {
         if (panels.TryGetValue(panelName, out BasePanel panel))
@@ -93,9 +108,9 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ÏÔÊ¾Ö¸¶¨Ãæ°å
+    /// æ˜¾ç¤ºæŒ‡å®šé¢æ¿
     /// </summary>
-    /// <param name="panelName">Ãæ°åÃû³Æ</param>
+    /// <param name="panelName">é¢æ¿åç§°</param>
     public void ShowPanel(string panelName)
     {
         BasePanel panel = GetPanel(panelName);
@@ -106,9 +121,9 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Òş²ØÖ¸¶¨Ãæ°å
+    /// éšè—æŒ‡å®šé¢æ¿
     /// </summary>
-    /// <param name="panelName">Ãæ°åÃû³Æ</param>
+    /// <param name="panelName">é¢æ¿åç§°</param>
     public void HidePanel(string panelName)
     {
         BasePanel panel = GetPanel(panelName);
@@ -119,9 +134,9 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ÇĞ»»Ãæ°åÏÔÊ¾×´Ì¬
+    /// åˆ‡æ¢é¢æ¿æ˜¾ç¤ºçŠ¶æ€
     /// </summary>
-    /// <param name="panelName">Ãæ°åÃû³Æ</param>
+    /// <param name="panelName">é¢æ¿åç§°</param>
     public void TogglePanel(string panelName)
     {
         BasePanel panel = GetPanel(panelName);
@@ -132,10 +147,10 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ¼ì²éÃæ°åÊÇ·ñ´ò¿ª
+    /// æ£€æŸ¥é¢æ¿æ˜¯å¦æ‰“å¼€
     /// </summary>
-    /// <param name="panelName">Ãæ°åÃû³Æ</param>
-    /// <returns>Ãæ°åÊÇ·ñ´ò¿ª</returns>
+    /// <param name="panelName">é¢æ¿åç§°</param>
+    /// <returns>é¢æ¿æ˜¯å¦æ‰“å¼€</returns>
     public bool IsPanelOpen(string panelName)
     {
         BasePanel panel = GetPanel(panelName);
@@ -147,7 +162,7 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Òş²ØËùÓĞÃæ°å
+    /// éšè—æ‰€æœ‰é¢æ¿
     /// </summary>
     public void HideAllPanels()
     {
@@ -158,7 +173,7 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ÏÔÊ¾ËùÓĞÃæ°å
+    /// æ˜¾ç¤ºæ‰€æœ‰é¢æ¿
     /// </summary>
     public void ShowAllPanels()
     {
@@ -169,91 +184,10 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Í¨¹ıÔ¤ÖÆÌå´´½¨ĞÂÃæ°å
+    /// è®¾ç½®é¢æ¿çš„å¯è§æ€§
     /// </summary>
-    /// <param name="panelPrefabName">Ãæ°åÔ¤ÖÆÌåÃû³Æ</param>
-    /// <param name="parent">¸¸¶ÔÏó</param>
-    /// <returns>´´½¨µÄÃæ°å</returns>
-    public BasePanel CreatePanel(string panelPrefabName, Transform parent = null)
-    {
-        // ²éÕÒÔ¤ÖÆÌå
-        GameObject panelPrefab = null;
-        foreach (GameObject prefab in panelPrefabs)
-        {
-            if (prefab != null && prefab.name == panelPrefabName)
-            {
-                panelPrefab = prefab;
-                break;
-            }
-        }
-        
-        if (panelPrefab == null)
-        {
-            Debug.LogWarning($"Panel prefab '{panelPrefabName}' not found!");
-            return null;
-        }
-        
-        // ´´½¨Ãæ°åÊµÀı
-        Transform parentTransform = parent != null ? parent : (panelRoot != null ? panelRoot : transform);
-        GameObject panelInstance = Instantiate(panelPrefab, parentTransform);
-        
-        // »ñÈ¡BasePanel×é¼ş
-        BasePanel panel = panelInstance.GetComponent<BasePanel>();
-        if (panel != null)
-        {
-            // Ìí¼Óµ½×ÖµäÖĞ
-            if (!panels.ContainsKey(panelInstance.name))
-            {
-                panels[panelInstance.name] = panel;
-            }
-            return panel;
-        }
-        else
-        {
-            Debug.LogWarning($"Panel prefab '{panelPrefabName}' does not have a BasePanel component!");
-            Destroy(panelInstance);
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Ïú»ÙÖ¸¶¨Ãæ°å
-    /// </summary>
-    /// <param name="panelName">Ãæ°åÃû³Æ</param>
-    public void DestroyPanel(string panelName)
-    {
-        if (panels.TryGetValue(panelName, out BasePanel panel))
-        {
-            panels.Remove(panelName);
-            if (panel != null && panel.gameObject != null)
-            {
-                Destroy(panel.gameObject);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Ë¢ĞÂÃæ°åÁĞ±í£¨µ±¶¯Ì¬Ìí¼ÓÃæ°åÊ±µ÷ÓÃ£©
-    /// </summary>
-    public void RefreshPanels()
-    {
-        InitializePanels();
-    }
-
-    /// <summary>
-    /// »ñÈ¡ËùÓĞÃæ°åÃû³Æ
-    /// </summary>
-    /// <returns>Ãæ°åÃû³ÆÁĞ±í</returns>
-    public List<string> GetAllPanelNames()
-    {
-        return new List<string>(panels.Keys);
-    }
-
-    /// <summary>
-    /// ÉèÖÃÃæ°åµÄ¿É¼ûĞÔ
-    /// </summary>
-    /// <param name="panelName">Ãæ°åÃû³Æ</param>
-    /// <param name="isVisible">ÊÇ·ñ¿É¼û</param>
+    /// <param name="panelName">é¢æ¿åç§°</param>
+    /// <param name="isVisible">æ˜¯å¦å¯è§</param>
     public void SetPanelVisible(string panelName, bool isVisible)
     {
         BasePanel panel = GetPanel(panelName);
@@ -271,10 +205,107 @@ public class UIManager : MonoBehaviour
     }
     
     /// <summary>
-    /// »ñÈ¡Ö¸¶¨±êÇ©µÄÃæ°åÁĞ±í
+    /// æ³¨å†Œé¢æ¿åˆ°UIManager
     /// </summary>
-    /// <param name="tag">±êÇ©Ãû³Æ</param>
-    /// <returns>Æ¥Åä±êÇ©µÄÃæ°åÁĞ±í</returns>
+    /// <param name="panel">è¦æ³¨å†Œçš„é¢æ¿</param>
+    public void RegisterPanel(BasePanel panel)
+    {
+        if (panel != null && !panels.ContainsKey(panel.name))
+        {
+            panels[panel.name] = panel;
+        }
+        else if (panel != null && panels.ContainsKey(panel.name))
+        {
+            Debug.LogWarning($"Panel '{panel.name}' is already registered!");
+        }
+    }
+    #endregion
+
+    #region Panel Creation and Destruction
+    /// <summary>
+    /// é€šè¿‡é¢„åˆ¶ä½“åˆ›å»ºæ–°é¢æ¿
+    /// </summary>
+    /// <param name="panelPrefabName">é¢æ¿é¢„åˆ¶ä½“åç§°</param>
+    /// <param name="parent">çˆ¶å¯¹è±¡</param>
+    /// <returns>åˆ›å»ºçš„é¢æ¿</returns>
+    public BasePanel CreatePanel(string panelPrefabName, Transform parent = null)
+    {
+        GameObject panelPrefab = null;
+        foreach (GameObject prefab in panelPrefabs)
+        {
+            if (prefab != null && prefab.name == panelPrefabName)
+            {
+                panelPrefab = prefab;
+                break;
+            }
+        }
+        
+        if (panelPrefab == null)
+        {
+            Debug.LogWarning($"Panel prefab '{panelPrefabName}' not found!");
+            return null;
+        }
+        
+        Transform parentTransform = parent != null ? parent : (panelRoot != null ? panelRoot : transform);
+        GameObject panelInstance = Instantiate(panelPrefab, parentTransform);
+        
+        BasePanel panel = panelInstance.GetComponent<BasePanel>();
+        if (panel != null)
+        {
+            if (!panels.ContainsKey(panelInstance.name))
+            {
+                panels[panelInstance.name] = panel;
+            }
+            return panel;
+        }
+        else
+        {
+            Debug.LogWarning($"Panel prefab '{panelPrefabName}' does not have a BasePanel component!");
+            Destroy(panelInstance);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// é”€æ¯æŒ‡å®šé¢æ¿
+    /// </summary>
+    /// <param name="panelName">é¢æ¿åç§°</param>
+    public void DestroyPanel(string panelName)
+    {
+        if (panels.TryGetValue(panelName, out BasePanel panel))
+        {
+            panels.Remove(panelName);
+            if (panel != null && panel.gameObject != null)
+            {
+                Destroy(panel.gameObject);
+            }
+        }
+    }
+
+    /// <summary>
+    /// åˆ·æ–°é¢æ¿åˆ—è¡¨ï¼ˆå½“åŠ¨æ€æ·»åŠ é¢æ¿æ—¶è°ƒç”¨ï¼‰
+    /// </summary>
+    public void RefreshPanels()
+    {
+        InitializePanels();
+    }
+    #endregion
+
+    #region Utility Methods
+    /// <summary>
+    /// è·å–æ‰€æœ‰é¢æ¿åç§°
+    /// </summary>
+    /// <returns>é¢æ¿åç§°åˆ—è¡¨</returns>
+    public List<string> GetAllPanelNames()
+    {
+        return new List<string>(panels.Keys);
+    }
+    
+    /// <summary>
+    /// è·å–æŒ‡å®šæ ‡ç­¾çš„é¢æ¿åˆ—è¡¨
+    /// </summary>
+    /// <param name="tag">æ ‡ç­¾åç§°</param>
+    /// <returns>åŒ¹é…æ ‡ç­¾çš„é¢æ¿åˆ—è¡¨</returns>
     public List<BasePanel> GetPanelsByTag(string tag)
     {
         List<BasePanel> taggedPanels = new List<BasePanel>();
@@ -291,9 +322,9 @@ public class UIManager : MonoBehaviour
     }
     
     /// <summary>
-    /// ÏÔÊ¾Ö¸¶¨±êÇ©µÄËùÓĞÃæ°å
+    /// æ˜¾ç¤ºæŒ‡å®šæ ‡ç­¾çš„æ‰€æœ‰é¢æ¿
     /// </summary>
-    /// <param name="tag">±êÇ©Ãû³Æ</param>
+    /// <param name="tag">æ ‡ç­¾åç§°</param>
     public void ShowPanelsByTag(string tag)
     {
         List<BasePanel> taggedPanels = GetPanelsByTag(tag);
@@ -304,9 +335,9 @@ public class UIManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Òş²ØÖ¸¶¨±êÇ©µÄËùÓĞÃæ°å
+    /// éšè—æŒ‡å®šæ ‡ç­¾çš„æ‰€æœ‰é¢æ¿
     /// </summary>
-    /// <param name="tag">±êÇ©Ãû³Æ</param>
+    /// <param name="tag">æ ‡ç­¾åç§°</param>
     public void HidePanelsByTag(string tag)
     {
         List<BasePanel> taggedPanels = GetPanelsByTag(tag);
@@ -315,20 +346,5 @@ public class UIManager : MonoBehaviour
             panel.Close();
         }
     }
-    
-    /// <summary>
-    /// ×¢²áÃæ°åµ½UIManager
-    /// </summary>
-    /// <param name="panel">Òª×¢²áµÄÃæ°å</param>
-    public void RegisterPanel(BasePanel panel)
-    {
-        if (panel != null && !panels.ContainsKey(panel.name))
-        {
-            panels[panel.name] = panel;
-        }
-        else if (panel != null && panels.ContainsKey(panel.name))
-        {
-            Debug.LogWarning($"Panel '{panel.name}' is already registered!");
-        }
-    }
+    #endregion
 }

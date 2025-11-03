@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,23 +7,43 @@ using Mirror;
 
 public class Controller_SendText : NetworkBehaviour
 {
-    public BasePanel basePanel;
+    #region å­—æ®µå®šä¹‰
     
-    [Header("Network")]
-    public NetworkManager networkManager;
-    
-    [Header("UI Components")]
-    public string panelName = "ChatPanel"; // Ãæ°åÃû³Æ
-    public string inputFieldName = "InputField"; // ÊäÈë¿òÃû³Æ
-    public string sendButtonName = "SendButton"; // ·¢ËÍ°´Å¥Ãû³Æ
-    public string sceneTextName = "SceneText"; // ³¡¾°ÎÄ±¾ÏÔÊ¾Ãû³Æ
+[Header("Network")]
+public NetworkManager networkManager;
 
+[Header("Player Data")]
+public PlayerData playerData;
+
+[Header("UI Components")]
+[Tooltip("é¢æ¿åç§°")]
+public string panelName = "ChatPanel";
+
+[Tooltip("è¾“å…¥æ¡†åç§°")]
+public string inputFieldName = "InputField";
+
+[Tooltip("å‘é€æŒ‰é’®åç§°")]
+public string sendButtonName = "SendButton";
+
+[Tooltip("åœºæ™¯æ–‡æœ¬æ˜¾ç¤ºåç§°")]
+public string sceneTextName = "SceneText";
+
+#endregion
+
+    #region å±æ€§
+    
+    public BasePanel basePanel { get; private set; }
+    
+    #endregion
+
+    #region Unityç”Ÿå‘½å‘¨æœŸæ–¹æ³•
+    
     public override void OnStartLocalPlayer()
     {
-        // Ö»ÓĞ±¾µØÍæ¼Ò²ÅĞèÒª´¦ÀíUI½»»¥
+        // åªæœ‰æœ¬åœ°ç©å®¶æ‰éœ€è¦å¤„ç†UIäº¤äº’
         if (isLocalPlayer)
         {
-            // Í¨¹ıUIManager»ñÈ¡Ö¸¶¨Ãæ°å
+            // é€šè¿‡UIManagerè·å–æŒ‡å®šé¢æ¿
             if (UIManager.Instance != null)
             {
                 basePanel = UIManager.Instance.GetPanel(panelName);
@@ -37,171 +57,24 @@ public class Controller_SendText : NetworkBehaviour
                 Debug.LogWarning("UIManager instance not found!");
             }
             
-            // ³õÊ¼»¯UIÊÂ¼ş
+            // åˆå§‹åŒ–UIäº‹ä»¶
             InitializeUIEvents();
         }
     }
     
     public override void OnStartClient()
     {
-        // ËùÓĞ¿Í»§¶Ë¶¼ĞèÒª¼àÌıÎÄ±¾¸üĞÂ
-        // Í¨¹ıUIManager»ñÈ¡Ö¸¶¨Ãæ°å£¨ÓÃÓÚÏÔÊ¾ÎÄ±¾£©
+        // æ‰€æœ‰å®¢æˆ·ç«¯éƒ½éœ€è¦ç›‘å¬æ–‡æœ¬æ›´æ–°
+        // é€šè¿‡UIManagerè·å–æŒ‡å®šé¢æ¿ï¼ˆç”¨äºæ˜¾ç¤ºæ–‡æœ¬ï¼‰
         if (basePanel == null && UIManager.Instance != null)
         {
             basePanel = UIManager.Instance.GetPanel(panelName);
         }
     }
-
-    /// <summary>
-    /// ³õÊ¼»¯UIÊÂ¼ş
-    /// </summary>
-    private void InitializeUIEvents()
-    {
-        if (basePanel != null)
-        {
-            // Îª·¢ËÍ°´Å¥Ìí¼Óµã»÷ÊÂ¼ş
-            Button sendButton = basePanel.GetButton(sendButtonName);
-            if (sendButton != null)
-            {
-                sendButton.onClick.AddListener(SendText);
-            }
-            
-            // Ò²¿ÉÒÔÎªÊäÈë¿òÌí¼Ó»Ø³µ·¢ËÍ¹¦ÄÜ
-            TMP_InputField inputField = basePanel.GetInputField(inputFieldName);
-            if (inputField != null)
-            {
-                inputField.onSubmit.AddListener(OnInputFieldSubmit);
-            }
-        }
-        
-        // Èç¹ûÃ»ÓĞÖ¸¶¨NetworkManager£¬³¢ÊÔ×Ô¶¯²éÕÒ
-        if (networkManager == null)
-        {
-            networkManager = FindObjectOfType<NetworkManager>();
-        }
-    }
-
-    /// <summary>
-    /// ·¢ËÍ°´Å¥µã»÷ÊÂ¼ş
-    /// </summary>
-    private void SendText()
-    {
-        if (basePanel == null) return;
-        
-        // »ñÈ¡ÊäÈë¿òÎÄ±¾
-        string text = basePanel.GetInputFieldText(inputFieldName);
-        
-        // ¼ì²éÎÄ±¾ÊÇ·ñÎª¿Õ
-        if (!string.IsNullOrEmpty(text))
-        {
-            // ·¢ËÍÎÄ±¾µ½³¡¾°
-            SendTextToScene(text);
-            
-            // Çå¿ÕÊäÈë¿ò
-            basePanel.SetInputFieldText(inputFieldName, "");
-        }
-    }
-    
-    /// <summary>
-    /// ÊäÈë¿ò»Ø³µÌá½»ÊÂ¼ş
-    /// </summary>
-    /// <param name="text">ÊäÈëµÄÎÄ±¾</param>
-    private void OnInputFieldSubmit(string text)
-    {
-        // ¼ì²éÎÄ±¾ÊÇ·ñÎª¿Õ
-        if (!string.IsNullOrEmpty(text))
-        {
-            // ·¢ËÍÎÄ±¾µ½³¡¾°
-            SendTextToScene(text);
-            
-            // Çå¿ÕÊäÈë¿ò
-            basePanel.SetInputFieldText(inputFieldName, "");
-        }
-    }
-
-    /// <summary>
-    /// ·¢ËÍÎÄ±¾µ½³¡¾°
-    /// </summary>
-    /// <param name="text">Òª·¢ËÍµÄÎÄ±¾</param>
-    private void SendTextToScene(string text)
-    {
-        // Í¨¹ıCommand·¢ËÍÎÄ±¾µ½·şÎñÆ÷
-        CmdAppendSceneText(text + "\n");
-    }
-    
-    /// <summary>
-    /// ¿Í»§¶ËÇëÇóÌí¼ÓÎÄ±¾µ½³¡¾°ÎÄ±¾
-    /// </summary>
-    /// <param name="text">ÒªÌí¼ÓµÄÎÄ±¾</param>
-    [Command]
-    private void CmdAppendSceneText(string text)
-    {
-        // ÔÚ·şÎñÆ÷ÉÏ¸üĞÂËùÓĞ¿Í»§¶ËµÄ³¡¾°ÎÄ±¾
-        RpcUpdateSceneText(text);
-    }
-    
-    /// <summary>
-    /// ·şÎñÆ÷ÏòËùÓĞ¿Í»§¶Ë¹ã²¥ÎÄ±¾¸üĞÂ
-    /// </summary>
-    /// <param name="text">ÒªÌí¼ÓµÄÎÄ±¾</param>
-    [ClientRpc]
-    private void RpcUpdateSceneText(string text)
-    {
-        // ÔÚËùÓĞ¿Í»§¶ËÉÏ¸üĞÂ³¡¾°ÎÄ±¾ÏÔÊ¾
-        if (basePanel != null)
-        {
-            string currentText = basePanel.GetTextContent(sceneTextName);
-            basePanel.SetText(sceneTextName, currentText + text);
-        }
-    }
-    
-    /// <summary>
-    /// Çå¿Õ³¡¾°ÎÄ±¾
-    /// </summary>
-    [Command]
-    public void CmdClearSceneText()
-    {
-        RpcClearSceneText();
-    }
-    
-    /// <summary>
-    /// ÔÚËùÓĞ¿Í»§¶ËÉÏÇå¿Õ³¡¾°ÎÄ±¾
-    /// </summary>
-    [ClientRpc]
-    private void RpcClearSceneText()
-    {
-        if (basePanel != null)
-        {
-            basePanel.SetText(sceneTextName, "");
-        }
-    }
-    
-    /// <summary>
-    /// ÉèÖÃ³¡¾°ÎÄ±¾
-    /// </summary>
-    /// <param name="text">ÒªÉèÖÃµÄÎÄ±¾</param>
-    [Command]
-    public void CmdSetSceneText(string text)
-    {
-        RpcSetSceneText(text);
-    }
-    
-    /// <summary>
-    /// ÔÚËùÓĞ¿Í»§¶ËÉÏÉèÖÃ³¡¾°ÎÄ±¾
-    /// </summary>
-    /// <param name="text">ÒªÉèÖÃµÄÎÄ±¾</param>
-    [ClientRpc]
-    private void RpcSetSceneText(string text)
-    {
-        if (basePanel != null)
-        {
-            basePanel.SetText(sceneTextName, text);
-        }
-    }
     
     private void OnDestroy()
     {
-        // Ö»ÓĞ±¾µØÍæ¼Ò²ÅĞèÒªÇåÀíUIÊÂ¼ş
+        // åªæœ‰æœ¬åœ°ç©å®¶æ‰éœ€è¦æ¸…ç†UIäº‹ä»¶
         if (isLocalPlayer && basePanel != null)
         {
             Button sendButton = basePanel.GetButton(sendButtonName);
@@ -217,4 +90,206 @@ public class Controller_SendText : NetworkBehaviour
             }
         }
     }
+    
+    #endregion
+
+    #region UIåˆå§‹åŒ–æ–¹æ³•
+    
+    /// <summary>
+    /// åˆå§‹åŒ–UIäº‹ä»¶
+    /// </summary>
+    private void InitializeUIEvents()
+    {
+        if (basePanel != null)
+        {
+            // ä¸ºå‘é€æŒ‰é’®æ·»åŠ ç‚¹å‡»äº‹ä»¶
+            Button sendButton = basePanel.GetButton(sendButtonName);
+            if (sendButton != null)
+            {
+                sendButton.onClick.AddListener(SendText);
+            }
+            
+            // ä¹Ÿå¯ä»¥ä¸ºè¾“å…¥æ¡†æ·»åŠ å›è½¦å‘é€åŠŸèƒ½
+            TMP_InputField inputField = basePanel.GetInputField(inputFieldName);
+            if (inputField != null)
+            {
+                inputField.onSubmit.AddListener(OnInputFieldSubmit);
+            }
+        }
+        
+        // å¦‚æœæ²¡æœ‰æŒ‡å®šNetworkManagerï¼Œå°è¯•è‡ªåŠ¨æŸ¥æ‰¾
+        if (networkManager == null)
+        {
+            networkManager = FindObjectOfType<NetworkManager>();
+        }
+    }
+    
+    #endregion
+
+    #region UIäº‹ä»¶å¤„ç†æ–¹æ³•
+    
+    /// <summary>
+    /// å‘é€æŒ‰é’®ç‚¹å‡»äº‹ä»¶
+    /// </summary>
+    private void SendText()
+    {
+        if (basePanel == null) return;
+        
+        // è·å–è¾“å…¥æ¡†æ–‡æœ¬
+        TMP_InputField inputField = basePanel.GetInputField(inputFieldName);
+        string text = "";
+        if (inputField != null)
+        {
+            text = inputField.text;
+        }
+        
+        // æ£€æŸ¥æ–‡æœ¬æ˜¯å¦ä¸ºç©º
+        if (!string.IsNullOrEmpty(text))
+        {
+            // å‘é€æ–‡æœ¬åˆ°åœºæ™¯
+            SendTextToScene(text);
+            
+            // æ¸…ç©ºè¾“å…¥æ¡†
+            if (inputField != null)
+            {
+                inputField.text = "";
+            }
+        }
+    }
+    
+    /// <summary>
+    /// è¾“å…¥æ¡†å›è½¦æäº¤äº‹ä»¶
+    /// </summary>
+    /// <param name="text">è¾“å…¥çš„æ–‡æœ¬</param>
+    private void OnInputFieldSubmit(string text)
+    {
+        // æ£€æŸ¥æ–‡æœ¬æ˜¯å¦ä¸ºç©º
+        if (!string.IsNullOrEmpty(text))
+        {
+            // å‘é€æ–‡æœ¬åˆ°åœºæ™¯
+            SendTextToScene(text);
+            
+            // æ¸…ç©ºè¾“å…¥æ¡†
+            TMP_InputField inputField = basePanel.GetInputField(inputFieldName);
+            if (inputField != null)
+            {
+                inputField.text = "";
+            }
+        }
+    }
+    
+    #endregion
+
+ #region æ–‡æœ¬å‘é€ç›¸å…³æ–¹æ³•
+    
+    
+/// <summary>
+/// å‘é€æ–‡æœ¬åˆ°åœºæ™¯
+/// </summary>
+/// <param name="text">è¦å‘é€çš„æ–‡æœ¬</param>
+private void SendTextToScene(string text)
+{
+    // è·å–ç©å®¶åç§°
+    string playerName = "Unknown";
+    if (playerData != null)
+    {
+        playerName = playerData.playerName;
+    }
+    
+    // é€šè¿‡Commandå‘é€æ–‡æœ¬åˆ°æœåŠ¡å™¨ï¼Œé™„åŠ ç©å®¶åç§°
+    string formattedText = $"[{playerName}] {text}\n";
+    CmdAppendSceneText(formattedText);
+}
+
+// å…¶ä½™æ–¹æ³•ä¿æŒä¸å˜...
+
+/// <summary>
+/// å®¢æˆ·ç«¯è¯·æ±‚æ·»åŠ æ–‡æœ¬åˆ°åœºæ™¯æ–‡æœ¬
+/// </summary>
+/// <param name="text">è¦æ·»åŠ çš„æ–‡æœ¬</param>
+[Command]
+private void CmdAppendSceneText(string text)
+{
+    // åœ¨æœåŠ¡å™¨ä¸Šæ›´æ–°æ‰€æœ‰å®¢æˆ·ç«¯çš„åœºæ™¯æ–‡æœ¬
+    RpcUpdateSceneText(text);
+}
+
+/// <summary>
+/// æœåŠ¡å™¨å‘æ‰€æœ‰å®¢æˆ·ç«¯å¹¿æ’­æ–‡æœ¬æ›´æ–°
+/// </summary>
+/// <param name="text">è¦æ·»åŠ çš„æ–‡æœ¬</param>
+[ClientRpc]
+private void RpcUpdateSceneText(string text)
+{
+    // åœ¨æ‰€æœ‰å®¢æˆ·ç«¯ä¸Šæ›´æ–°åœºæ™¯æ–‡æœ¬æ˜¾ç¤º
+    if (basePanel != null)
+    {
+        // è·å–æ–‡æœ¬ç»„ä»¶å¹¶ç›´æ¥ä¿®æ”¹å…¶æ–‡æœ¬å±æ€§
+        TextMeshProUGUI sceneText = basePanel.GetText(sceneTextName);
+        if (sceneText != null)
+        {
+            sceneText.text += text;
+        }
+    }
+}
+
+#endregion
+
+    #region æ–‡æœ¬ç®¡ç†å‘½ä»¤æ–¹æ³•
+    
+    /// <summary>
+    /// æ¸…ç©ºåœºæ™¯æ–‡æœ¬
+    /// </summary>
+    [Command]
+    public void CmdClearSceneText()
+    {
+        RpcClearSceneText();
+    }
+    
+    /// <summary>
+    /// åœ¨æ‰€æœ‰å®¢æˆ·ç«¯ä¸Šæ¸…ç©ºåœºæ™¯æ–‡æœ¬
+    /// </summary>
+    [ClientRpc]
+    private void RpcClearSceneText()
+    {
+        if (basePanel != null)
+        {
+            // è·å–æ–‡æœ¬ç»„ä»¶å¹¶ç›´æ¥æ¸…ç©ºå…¶æ–‡æœ¬å±æ€§
+            TextMeshProUGUI sceneText = basePanel.GetText(sceneTextName);
+            if (sceneText != null)
+            {
+                sceneText.text = "";
+            }
+        }
+    }
+    
+    /// <summary>
+    /// è®¾ç½®åœºæ™¯æ–‡æœ¬
+    /// </summary>
+    /// <param name="text">è¦è®¾ç½®çš„æ–‡æœ¬</param>
+    [Command]
+    public void CmdSetSceneText(string text)
+    {
+        RpcSetSceneText(text);
+    }
+    
+    /// <summary>
+    /// åœ¨æ‰€æœ‰å®¢æˆ·ç«¯ä¸Šè®¾ç½®åœºæ™¯æ–‡æœ¬
+    /// </summary>
+    /// <param name="text">è¦è®¾ç½®çš„æ–‡æœ¬</param>
+    [ClientRpc]
+    private void RpcSetSceneText(string text)
+    {
+        if (basePanel != null)
+        {
+            // è·å–æ–‡æœ¬ç»„ä»¶å¹¶ç›´æ¥è®¾ç½®å…¶æ–‡æœ¬å±æ€§
+            TextMeshProUGUI sceneText = basePanel.GetText(sceneTextName);
+            if (sceneText != null)
+            {
+                sceneText.text = text;
+            }
+        }
+    }
+    
+    #endregion
 }

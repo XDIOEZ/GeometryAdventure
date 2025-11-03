@@ -30,7 +30,7 @@ public class Controller_Move : NetworkBehaviour
     {
         if (playerInput == null)
         {
-            playerInput = new GamePlayerInput();
+            playerInput = GetComponent<PlayerInput>().InputActionAsset;
         }
         
         // 绑定输入事件

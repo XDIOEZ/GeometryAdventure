@@ -17,7 +17,7 @@ public class BasePanel : MonoBehaviour
     private Dictionary<string, Button> buttons = new Dictionary<string, Button>();
     private Dictionary<string, TMP_InputField> inputFields = new Dictionary<string, TMP_InputField>();
     private Dictionary<string, TextMeshProUGUI> textElements = new Dictionary<string, TextMeshProUGUI>();
-    private Dictionary<string, UnityEngine.UI.Text> legacyTextElements = new Dictionary<string, UnityEngine.UI.Text>(); // 添加对旧版Text的支持
+    private Dictionary<string, Text> legacyTextElements = new Dictionary<string, UnityEngine.UI.Text>(); // 添加对旧版Text的支持
     private Dictionary<string, Toggle> toggles = new Dictionary<string, Toggle>();
     private Dictionary<string, Slider> sliders = new Dictionary<string, Slider>();
     private Dictionary<string, ScrollRect> scrollRects = new Dictionary<string, ScrollRect>();
@@ -30,39 +30,39 @@ public class BasePanel : MonoBehaviour
     [SerializeField]
     private bool isOpen = false;
 
-protected virtual void Awake()
-{
-    // 自动获取所有子对象上的UI组件
-    CollectUIComponents();
-    rectTransform = GetComponent<RectTransform>();
-    canvasGroup = GetComponent<CanvasGroup>();
-    
-    // 初始化面板状态
-    if (canvasGroup != null)
+    protected virtual void Awake()
     {
-        isOpen = canvasGroup.alpha > 0 && canvasGroup.interactable && canvasGroup.blocksRaycasts;
+        // 自动获取所有子对象上的UI组件
+        CollectUIComponents();
+        rectTransform = GetComponent<RectTransform>();
+        canvasGroup = GetComponent<CanvasGroup>();
+        
+        // 初始化面板状态
+        if (canvasGroup != null)
+        {
+            isOpen = canvasGroup.alpha > 0 && canvasGroup.interactable && canvasGroup.blocksRaycasts;
+        }
+        
+        // 自动注册到UIManager
+        RegisterToUIManager();
     }
-    
-    // 自动注册到UIManager
-    RegisterToUIManager();
-}
 
-/// <summary>
-/// 注册到UIManager
-/// </summary>
-private void RegisterToUIManager()
-{
-    // 检查UIManager是否存在
-    if (UIManager.Instance != null)
+    /// <summary>
+    /// 注册到UIManager
+    /// </summary>
+    private void RegisterToUIManager()
     {
-        // 将当前面板添加到UIManager中
-        UIManager.Instance.RegisterPanel(this);
+        // 检查UIManager是否存在
+        if (UIManager.Instance != null)
+        {
+            // 将当前面板添加到UIManager中
+            UIManager.Instance.RegisterPanel(this);
+        }
+        else
+        {
+            Debug.LogWarning($"UIManager instance not found. Panel '{name}' not registered.");
+        }
     }
-    else
-    {
-        Debug.LogWarning($"UIManager instance not found. Panel '{name}' not registered.");
-    }
-}
 
     /// <summary>
     /// 自动收集所有子对象上的UI组件
@@ -244,80 +244,6 @@ private void RegisterToUIManager()
         return null;
     }
 
-    /// <summary>
-    /// 设置按钮点击事件
-    /// </summary>
-    /// <param name="buttonName">按钮名称</param>
-    /// <param name="onClick">点击回调</param>
-    public void SetButtonOnClick(string buttonName, UnityEngine.Events.UnityAction onClick)
-    {
-        Button button = GetButton(buttonName);
-        if (button != null)
-        {
-            button.onClick.AddListener(onClick);
-        }
-    }
-
-    /// <summary>
-    /// 设置按钮按下事件
-    /// </summary>
-    /// <param name="buttonName">按钮名称</param>
-    /// <param name="onPress">按下回调</param>
-    public void SetButtonOnPress(string buttonName, UnityEngine.Events.UnityAction onPress)
-    {
-        Button button = GetButton(buttonName);
-        if (button != null)
-        {
-            EventTrigger trigger = button.GetComponent<EventTrigger>();
-            if (trigger == null)
-            {
-                trigger = button.gameObject.AddComponent<EventTrigger>();
-            }
-
-            EventTrigger.Entry entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.PointerDown;
-            entry.callback.AddListener((data) => { onPress?.Invoke(); });
-            trigger.triggers.Add(entry);
-        }
-    }
-
-    /// <summary>
-    /// 设置按钮松开事件
-    /// </summary>
-    /// <param name="buttonName">按钮名称</param>
-    /// <param name="onRelease">松开回调</param>
-    public void SetButtonOnRelease(string buttonName, UnityEngine.Events.UnityAction onRelease)
-    {
-        Button button = GetButton(buttonName);
-        if (button != null)
-        {
-            EventTrigger trigger = button.GetComponent<EventTrigger>();
-            if (trigger == null)
-            {
-                trigger = button.gameObject.AddComponent<EventTrigger>();
-            }
-
-            EventTrigger.Entry entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.PointerUp;
-            entry.callback.AddListener((data) => { onRelease?.Invoke(); });
-            trigger.triggers.Add(entry);
-        }
-    }
-
-    /// <summary>
-    /// 显示/隐藏按钮
-    /// </summary>
-    /// <param name="buttonName">按钮名称</param>
-    /// <param name="isVisible">是否可见</param>
-    public void SetButtonVisible(string buttonName, bool isVisible)
-    {
-        Button button = GetButton(buttonName);
-        if (button != null)
-        {
-            button.gameObject.SetActive(isVisible);
-        }
-    }
-
     #endregion
 
     #region 输入框操作
@@ -337,89 +263,9 @@ private void RegisterToUIManager()
         return null;
     }
 
-    /// <summary>
-    /// 设置输入框文本
-    /// </summary>
-    /// <param name="inputFieldName">输入框名称</param>
-    /// <param name="text">文本内容</param>
-    public void SetInputFieldText(string inputFieldName, string text)
-    {
-        TMP_InputField inputField = GetInputField(inputFieldName);
-        if (inputField != null)
-        {
-            inputField.text = text;
-        }
-    }
-
-    /// <summary>
-    /// 获取输入框文本
-    /// </summary>
-    /// <param name="inputFieldName">输入框名称</param>
-    /// <returns>输入框文本内容</returns>
-    public string GetInputFieldText(string inputFieldName)
-    {
-        TMP_InputField inputField = GetInputField(inputFieldName);
-        if (inputField != null)
-        {
-            return inputField.text;
-        }
-        return "";
-    }
-
-    /// <summary>
-    /// 设置输入框是否可交互
-    /// </summary>
-    /// <param name="inputFieldName">输入框名称</param>
-    /// <param name="isInteractable">是否可交互</param>
-    public void SetInputFieldInteractable(string inputFieldName, bool isInteractable)
-    {
-        TMP_InputField inputField = GetInputField(inputFieldName);
-        if (inputField != null)
-        {
-            inputField.interactable = isInteractable;
-        }
-    }
-
-    /// <summary>
-    /// 显示/隐藏输入框
-    /// </summary>
-    /// <param name="inputFieldName">输入框名称</param>
-    /// <param name="isVisible">是否可见</param>
-    public void SetInputFieldVisible(string inputFieldName, bool isVisible)
-    {
-        TMP_InputField inputField = GetInputField(inputFieldName);
-        if (inputField != null)
-        {
-            inputField.gameObject.SetActive(isVisible);
-        }
-    }
-
     #endregion
 
     #region 文本操作
-
-    /// <summary>
-    /// 获取文本组件 (兼容TMP和旧版Text)
-    /// </summary>
-    /// <param name="textName">文本名称</param>
-    /// <returns>文本组件，如果不存在返回null</returns>
-    public object GetTextComponent(string textName)
-    {
-        // 优先查找TextMeshProUGUI
-        if (textElements.TryGetValue(textName, out TextMeshProUGUI tmpText))
-        {
-            return tmpText;
-        }
-        
-        // 如果找不到，则查找旧版Text
-        if (legacyTextElements.TryGetValue(textName, out UnityEngine.UI.Text legacyText))
-        {
-            return legacyText;
-        }
-        
-        Debug.LogWarning($"未找到名为 {textName} 的文本组件");
-        return null;
-    }
 
     /// <summary>
     /// 获取文本组件 (已废弃，为了向后兼容保留)
@@ -443,7 +289,6 @@ private void RegisterToUIManager()
         return null;
     }
 
-
     public Text GetText_Legacy(string textName)
     {
         if (legacyTextElements.TryGetValue(textName, out Text text))
@@ -453,100 +298,6 @@ private void RegisterToUIManager()
 
         Debug.LogWarning($"未找到名为 {textName} 的文本组件");
         return null;
-    }
-
-    /// <summary>
-    /// 设置文本内容 (兼容TMP和旧版Text)
-    /// </summary>
-    /// <param name="textName">文本名称</param>
-    /// <param name="text">文本内容</param>
-    public void SetText(string textName, string text)
-    {
-        // 尝试设置TextMeshProUGUI文本
-        if (textElements.TryGetValue(textName, out TextMeshProUGUI tmpText))
-        {
-            tmpText.text = text;
-            return;
-        }
-        
-        // 如果找不到TMP文本，尝试设置旧版Text
-        if (legacyTextElements.TryGetValue(textName, out UnityEngine.UI.Text legacyText))
-        {
-            legacyText.text = text;
-            return;
-        }
-        
-        Debug.LogWarning($"未找到名为 {textName} 的文本组件");
-    }
-
-    /// <summary>
-    /// 获取文本内容 (兼容TMP和旧版Text)
-    /// </summary>
-    /// <param name="textName">文本名称</param>
-    /// <returns>文本内容</returns>
-    public string GetTextContent(string textName)
-    {
-        // 尝试获取TextMeshProUGUI文本
-        if (textElements.TryGetValue(textName, out TextMeshProUGUI tmpText))
-        {
-            return tmpText.text;
-        }
-        
-        // 如果找不到TMP文本，尝试获取旧版Text
-        if (legacyTextElements.TryGetValue(textName, out UnityEngine.UI.Text legacyText))
-        {
-            return legacyText.text;
-        }
-        
-        return "";
-    }
-
-    /// <summary>
-    /// 设置文本颜色 (兼容TMP和旧版Text)
-    /// </summary>
-    /// <param name="textName">文本名称</param>
-    /// <param name="color">颜色</param>
-    public void SetTextColor(string textName, Color color)
-    {
-        // 尝试设置TextMeshProUGUI颜色
-        if (textElements.TryGetValue(textName, out TextMeshProUGUI tmpText))
-        {
-            tmpText.color = color;
-            return;
-        }
-        
-        // 如果找不到TMP文本，尝试设置旧版Text颜色
-        if (legacyTextElements.TryGetValue(textName, out UnityEngine.UI.Text legacyText))
-        {
-            legacyText.color = color;
-            return;
-        }
-        
-        Debug.LogWarning($"未找到名为 {textName} 的文本组件");
-    }
-
-    /// <summary>
-    /// 显示/隐藏文本 (兼容TMP和旧版Text)
-    /// </summary>
-    /// <param name="textName">文本名称</param>
-    /// <param name="isVisible">是否可见</param>
-    public void SetTextVisible(string textName, bool isVisible)
-    {
-        // 尝试显示/隐藏TextMeshProUGUI
-        if (textElements.TryGetValue(textName, out TextMeshProUGUI tmpText))
-        {
-            tmpText.gameObject.SetActive(isVisible);
-            return;
-        }
-        
-        // 如果找不到TMP文本，尝试显示/隐藏旧版Text
-        if (legacyTextElements.TryGetValue(textName, out UnityEngine.UI.Text legacyText))
-        {
-            legacyText.gameObject.SetActive(isVisible);
-            return;
-        }
-        
-        Debug.LogWarning($"未找到名为 {textName} 的文本组件");
     }
 
     #endregion
@@ -568,35 +319,6 @@ private void RegisterToUIManager()
         return null;
     }
 
-    /// <summary>
-    /// 设置Toggle是否选中
-    /// </summary>
-    /// <param name="toggleName">Toggle名称</param>
-    /// <param name="isOn">是否选中</param>
-    public void SetToggleIsOn(string toggleName, bool isOn)
-    {
-        Toggle toggle = GetToggle(toggleName);
-        if (toggle != null)
-        {
-            toggle.isOn = isOn;
-        }
-    }
-
-    /// <summary>
-    /// 获取Toggle是否选中
-    /// </summary>
-    /// <param name="toggleName">Toggle名称</param>
-    /// <returns>Toggle是否选中</returns>
-    public bool GetToggleIsOn(string toggleName)
-    {
-        Toggle toggle = GetToggle(toggleName);
-        if (toggle != null)
-        {
-            return toggle.isOn;
-        }
-        return false;
-    }
-
     #endregion
 
     #region Slider操作
@@ -616,96 +338,9 @@ private void RegisterToUIManager()
         return null;
     }
 
-    /// <summary>
-    /// 设置Slider值
-    /// </summary>
-    /// <param name="sliderName">Slider名称</param>
-    /// <param name="value">值</param>
-    public void SetSliderValue(string sliderName, float value)
-    {
-        Slider slider = GetSlider(sliderName);
-        if (slider != null)
-        {
-            slider.value = value;
-        }
-    }
-
-    /// <summary>
-    /// 获取Slider值
-    /// </summary>
-    /// <param name="sliderName">Slider名称</param>
-    /// <returns>Slider值</returns>
-    public float GetSliderValue(string sliderName)
-    {
-        Slider slider = GetSlider(sliderName);
-        if (slider != null)
-        {
-            return slider.value;
-        }
-        return 0f;
-    }
-
     #endregion
 
     #region 通用操作
-
-    /// <summary>
-    /// 显示/隐藏任意UI组件
-    /// </summary>
-    /// <param name="uiName">UI组件名称</param>
-    /// <param name="isVisible">是否可见</param>
-    public void SetUIVisible(string uiName, bool isVisible)
-    {
-        // 检查是否为按钮
-        if (buttons.ContainsKey(uiName))
-        {
-            SetButtonVisible(uiName, isVisible);
-            return;
-        }
-
-        // 检查是否为输入框
-        if (inputFields.ContainsKey(uiName))
-        {
-            SetInputFieldVisible(uiName, isVisible);
-            return;
-        }
-
-        // 检查是否为文本 (包括TMP和旧版Text)
-        if (textElements.ContainsKey(uiName))
-        {
-            SetTextVisible(uiName, isVisible);
-            return;
-        }
-        
-        if (legacyTextElements.ContainsKey(uiName))
-        {
-            SetTextVisible(uiName, isVisible);
-            return;
-        }
-
-        // 检查是否为Toggle
-        if (toggles.ContainsKey(uiName))
-        {
-            toggles[uiName].gameObject.SetActive(isVisible);
-            return;
-        }
-
-        // 检查是否为Slider
-        if (sliders.ContainsKey(uiName))
-        {
-            sliders[uiName].gameObject.SetActive(isVisible);
-            return;
-        }
-
-        // 检查是否为Image
-        if (images.ContainsKey(uiName))
-        {
-            images[uiName].gameObject.SetActive(isVisible);
-            return;
-        }
-
-        Debug.LogWarning($"未找到名为 {uiName} 的UI组件");
-    }
 
     /// <summary>
     /// 重新收集所有UI组件（当动态添加UI组件时调用）
