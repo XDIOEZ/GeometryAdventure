@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerInput : MonoBehaviour
+public class Controller_PlayerInput : MonoBehaviour
 {
     // 输入动作资产
     private GamePlayerInput inputActionAsset;

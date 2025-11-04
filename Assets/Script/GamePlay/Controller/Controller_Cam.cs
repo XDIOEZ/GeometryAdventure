@@ -12,7 +12,6 @@ public class Controller_Cam : NetworkBehaviour
     {
         if (isLocalPlayer)
         {
-            Camera.main.enabled = false;
             // 获取子对象上的AudioListener组件并将其设置为启用状态
             AudioListener audioListener = GetComponentInChildren<AudioListener>();
             if (audioListener != null)
@@ -30,7 +29,7 @@ public class Controller_Cam : NetworkBehaviour
 
     public override void OnStopClient()
     {
-            Camera.main.enabled = true;
+
     }
 
     #endregion

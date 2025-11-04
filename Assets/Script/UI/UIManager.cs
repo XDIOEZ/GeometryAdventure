@@ -216,7 +216,7 @@ public class UIManager : MonoBehaviour
         }
         else if (panel != null && panels.ContainsKey(panel.name))
         {
-            Debug.LogWarning($"Panel '{panel.name}' is already registered!");
+            Debug.Log($"面板{panel.name}已经注册了哦");
         }
     }
     #endregion

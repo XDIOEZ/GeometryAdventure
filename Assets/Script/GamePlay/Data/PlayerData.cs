@@ -14,15 +14,16 @@ public class PlayerData : NetworkBehaviour
 
     [SyncVar(hook = nameof(OnNameChanged))]
     public string playerName = "Player";
-    
+
     [SyncVar(hook = nameof(OnColorChanged))]
     public Color playerColor = Color.white;
 
-    [SyncVar(hook = nameof(OnStrengthChanged))]
-    public int strength = 10;
+    [SyncVar(hook = nameof(OnHpChanged))]
+    public int hp = 10;
 
-    [SyncVar(hook = nameof(OnStrengthGrowthRateChanged))]
-    public float strengthGrowthRate = 1.0f;
+    [SyncVar(hook = nameof(OnAttackChanged))]
+    [Tooltip("玩家攻击力")]
+    public int attack = 1;
 
     [SyncVar(hook = nameof(OnInvincibleChanged))]
     [Tooltip("无敌状态")]
@@ -35,6 +36,7 @@ public class PlayerData : NetworkBehaviour
 
     // 记录无敌状态的协程，用于取消之前的无敌状态
     private Coroutine invincibleCoroutine;
+
 
     #endregion
 
@@ -52,8 +54,19 @@ public class PlayerData : NetworkBehaviour
         // 初始化显示当前值
         UpdateNameDisplay(playerName);
         UpdateColorDisplay(playerColor);
-        UpdateStrengthDisplay(strength);
+        UpdateHpDisplay(hp);
+        UpdateAtkDisplay(attack);
         GameManager.Instance.AddPlayer(this);
+    }
+
+    protected override void OnValidate()
+    {
+        basePanel = GetComponentInChildren<BasePanel>();
+        basePanel.CollectUIComponents();
+        UpdateNameDisplay(playerName);
+        UpdateColorDisplay(playerColor);
+        UpdateHpDisplay(hp);
+        UpdateAtkDisplay(attack);
     }
     public override void OnStartLocalPlayer()
     {
@@ -72,7 +85,6 @@ public class PlayerData : NetworkBehaviour
     #endregion
 
     #region 同步变量回调方法
-
     /// <summary>
     /// 玩家名称变更回调
     /// </summary>
@@ -96,24 +108,24 @@ public class PlayerData : NetworkBehaviour
     }
 
     /// <summary>
-    /// 玩家力量变更回调
+    /// 玩家生命值变更回调
     /// </summary>
-    /// <param name="oldStrength">旧力量值</param>
-    /// <param name="newStrength">新力量值</param>
-    public void OnStrengthChanged(int oldStrength, int newStrength)
+    /// <param name="oldHp">旧生命值</param>
+    /// <param name="newHp">新生命值</param>
+    public void OnHpChanged(int oldHp, int newHp)
     {
-        // 确保在所有客户端上正确更新力量显示
-        UpdateStrengthDisplay(newStrength);
+        // 确保在所有客户端上正确更新生命值显示
+        UpdateHpDisplay(newHp);
     }
 
     /// <summary>
-    /// 玩家力量增长速度变更回调
+    /// 玩家攻击力变更回调
     /// </summary>
-    /// <param name="oldRate">旧增长速度</param>
-    /// <param name="newRate">新增长速度</param>
-    public void OnStrengthGrowthRateChanged(float oldRate, float newRate)
+    /// <param name="oldAttack">旧攻击力</param>
+    /// <param name="newAttack">新攻击力</param>
+    public void OnAttackChanged(int oldAttack, int newAttack)
     {
-        // 力量增长速度变更处理
+        UpdateAtkDisplay(newAttack);
     }
 
     /// <summary>
@@ -178,22 +190,25 @@ public class PlayerData : NetworkBehaviour
     /// <summary>
     /// 更新力量显示
     /// </summary>
-    /// <param name="strengthValue">要显示的力量值</param>
-    private void UpdateStrengthDisplay(int strengthValue)
+    private void UpdateHpDisplay(int Hp)
     {
-        // 检查basePanel是否存在
-        if (basePanel != null)
-        {
             // 获取力量显示文本组件并设置文本
-            var strengthText = basePanel.GetText_Legacy("Strength");
+            var strengthText = basePanel.GetText_Legacy("HP");
             if (strengthText != null)
             {
-                strengthText.text = "力量:" + strengthValue;
+                strengthText.text = "HP:" + Hp;
             }
-        }
-        else
+    }
+
+    /// <summary>
+    /// 更新攻击力显示
+    /// </summary>
+    private void UpdateAtkDisplay(int ATK)
+    {
+        var strengthText = basePanel.GetText_Legacy("ATK");
+        if (strengthText != null)
         {
-            Debug.LogWarning("BasePanel is not assigned!");
+            strengthText.text = "ATK:" + ATK;
         }
     }
 
@@ -222,39 +237,29 @@ public class PlayerData : NetworkBehaviour
     }
 
     /// <summary>
-    /// 更改玩家力量命令
-    /// </summary>
-    /// <param name="newStrength">新力量值</param>
-
-    public void CmdChangeStrength(int newStrength)
-    {
-        strength = newStrength;
-    }
-
-    /// <summary>
     /// 增加玩家力量命令
     /// </summary>
     /// <param name="amount">增加的力量值</param>
     [Server]
-    public void CmdAddStrength(int amount)
+    public void CmdAddHp(int amount)
     {
-        strength += amount;
+        hp += amount;
 
-        if (strength <= 0)
+        if (hp <= 0)
         {
-            strength = 0;
+            hp = 0;
             CmdDie();
         }
     }
-
-    /// <summary>
-    /// 更改玩家力量增长速度命令
-    /// </summary>
-    /// <param name="newRate">新增长率</param>
-    [Command]
-    public void CmdChangeStrengthGrowthRate(float newRate)
+    public void ReportAddHp(int amount)
     {
-        strengthGrowthRate = newRate;
+        hp += amount;
+
+        if (hp <= 0)
+        {
+            hp = 0;
+            CmdDie();
+        }
     }
 
     #endregion
@@ -272,7 +277,7 @@ public class PlayerData : NetworkBehaviour
 
         // 禁止该玩家再参与碰撞、战斗等
         isInvincible = true;
-        strength = 0;
+        hp = 0;
     }
     [ClientRpc]
     private void RpcSetInactive()
@@ -285,7 +290,7 @@ public class PlayerData : NetworkBehaviour
 
         // 变灰/半透明显示死亡状态
         var sr = GetComponent<SpriteRenderer>();
-        if (sr != null) sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, 0.0f);
+        if (sr != null) sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, 0.2f);
 
         Debug.Log($"{playerName} 已死亡（客户端表现）");
     }

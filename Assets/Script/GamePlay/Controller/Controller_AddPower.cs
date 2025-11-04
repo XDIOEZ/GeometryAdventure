@@ -7,12 +7,12 @@ using UnityEngine.InputSystem;
 public class Controller_AddPower : NetworkBehaviour
 {
     private PlayerData playerData;
-    private PlayerInput playerInput;
+    private Controller_PlayerInput playerInput;
     
     private void Awake()
     {
         playerData = GetComponent<PlayerData>();
-        playerInput = GetComponent<PlayerInput>();
+        playerInput = GetComponent<Controller_PlayerInput>();
     }
     
     public override void OnStartLocalPlayer()
@@ -20,7 +20,7 @@ public class Controller_AddPower : NetworkBehaviour
         // 获取PlayerInput组件（如果Awake中没有获取到）
         if (playerInput == null)
         {
-            playerInput = GetComponent<PlayerInput>();
+            playerInput = GetComponent<Controller_PlayerInput>();
         }
         
         // 注册空格键按下事件
@@ -47,12 +47,7 @@ public class Controller_AddPower : NetworkBehaviour
     [Command]
 private void CmdAddPower()
 {
-    // 在服务器上执行力量增加操作
-    if (playerData != null)
-    {
-        int amount = Mathf.RoundToInt(playerData.strengthGrowthRate);
-        playerData.CmdAddStrength(amount);
-    }
+
 }
     
     private void OnDisable()

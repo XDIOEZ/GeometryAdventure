@@ -30,27 +30,40 @@ public class Controller_Move : NetworkBehaviour
     {
         if (playerInput == null)
         {
-            playerInput = GetComponent<PlayerInput>().InputActionAsset;
+            // 获取PlayerInput组件关联的InputActionAsset
+            // PlayerInput组件会自动管理输入系统的启用/禁用
+            playerInput = GetComponent<Controller_PlayerInput>().InputActionAsset;
         }
         
         // 绑定输入事件
         playerInput.Player.Move.performed += OnMove;
         playerInput.Player.Move.canceled += OnMove;
-        
-        // 启用输入系统
-        playerInput.Enable();
     }
 
     private void OnMove(InputAction.CallbackContext context)
     {
-        // 获取移动方向并更新刚体速度
-        moveDirection = context.ReadValue<Vector2>();
-        rb.velocity = moveDirection * speed;
+        // 获取移动方向，但只保留水平方向
+        Vector2 inputDirection = context.ReadValue<Vector2>();
+        moveDirection = new Vector2(inputDirection.x, 0f); // 只保留x轴移动
         
         // 触发事件通知其他系统
         if (onMove != null)
         {
             onMove.Invoke(moveDirection);
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        // 在FixedUpdate中处理移动逻辑，确保物理计算的一致性
+        if (isLocalPlayer && moveDirection != Vector2.zero)
+        {
+            rb.velocity = new Vector2(moveDirection.x * speed, rb.velocity.y);
+        }
+        else if (isLocalPlayer)
+        {
+            // 如果没有输入，只保持垂直速度（重力等影响）
+            rb.velocity = new Vector2(0f, rb.velocity.y);
         }
     }
 
@@ -61,20 +74,8 @@ public class Controller_Move : NetworkBehaviour
     
     private void OnDisable()
     {
-        // 只禁用，不销毁，这样在重新启用时可以恢复
-        if (playerInput != null)
-        {
-            playerInput.Disable();
-        }
-    }
-    
-    private void OnEnable()
-    {
-        // 如果之前被禁用过，重新启用输入
-        if (isLocalPlayer && playerInput != null)
-        {
-            playerInput.Enable();
-        }
+        // 禁用时重置移动方向
+        moveDirection = Vector2.zero;
     }
     
     private void CleanupInput()
@@ -90,9 +91,6 @@ public class Controller_Move : NetworkBehaviour
                     playerInput.Player.Move.canceled -= OnMove;
                 }
                 
-                // 禁用输入系统
-                playerInput.Disable();
-                
                 // 显式销毁输入对象以避免内存泄漏
                 playerInput = null;
             }
@@ -107,5 +105,8 @@ public class Controller_Move : NetworkBehaviour
         {
             onMove.Clear();
         }
+        
+        // 重置移动方向
+        moveDirection = Vector2.zero;
     }
 }

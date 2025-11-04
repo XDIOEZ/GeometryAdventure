@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - OnlyOne
+  - Monster
   layers:
   - Default
   - TransparentFX
@@ -12,10 +13,10 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
+  - Ground
+  - Player
+  - Monster
+  - EnvItem
   - 
   - 
   - 
@@ -41,4 +42,13 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: EnvItem
+    uniqueID: 2127643973
+    locked: 0
+  - name: Ground
+    uniqueID: 1087781471
+    locked: 0
+  - name: Player
+    uniqueID: 3637778581
     locked: 0
