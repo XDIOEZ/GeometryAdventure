@@ -109,10 +109,10 @@ GameObject:
   - component: {fileID: 2144469862620939367}
   - component: {fileID: 1609571667212589350}
   - component: {fileID: 4650127920334231742}
-  - component: {fileID: 7462518792644862192}
   - component: {fileID: 538278450528769446}
   - component: {fileID: 4609660226562951123}
   - component: {fileID: 1641482382157131600}
+  - component: {fileID: 6001849235604245529}
   m_Layer: 8
   m_Name: Silme
   m_TagString: Monster
@@ -251,7 +251,7 @@ MonoBehaviour:
   syncInterval: 0
   playerName: "\u53F2\u83B1\u59C6"
   playerColor: {r: 0, g: 1, b: 0.118023396, a: 1}
-  hp: 10
+  hp: 3
   attack: 1
   speed: 3
   isInvincible: 0
@@ -283,7 +283,7 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 1
   m_SleepingMode: 1
-  m_CollisionDetection: 1
+  m_CollisionDetection: 0
   m_Constraints: 4
 --- !u!114 &4650127920334231742
 MonoBehaviour:
@@ -302,40 +302,6 @@ MonoBehaviour:
   serverOnly: 0
   visibility: 2
   hasSpawned: 0
---- !u!114 &7462518792644862192
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6809923701024963749}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ec4f7556ca1e4b55a3381fc6a02b1bc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  syncDirection: 1
-  syncMode: 0
-  syncInterval: 0
-  target: {fileID: 7098034472124595003}
-  syncPosition: 1
-  syncRotation: 1
-  syncScale: 1
-  onlySyncOnChange: 1
-  compressRotation: 1
-  interpolatePosition: 1
-  interpolateRotation: 1
-  interpolateScale: 1
-  coordinateSpace: 0
-  sendIntervalMultiplier: 1
-  timelineOffset: 0
-  showGizmos: 0
-  showOverlay: 0
-  overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
-  onlySyncOnChangeCorrectionMultiplier: 2
-  rotationSensitivity: 0.01
-  positionPrecision: 0.01
-  scalePrecision: 0.01
 --- !u!114 &538278450528769446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -348,12 +314,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cc9f7588f7ba0e45bd0c5f4008cb1f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   waypoints:
   - {fileID: 1312229344564528826}
   - {fileID: 4036966224970158405}
   RandomSpeedOffset: {x: -1, y: 1}
-  playerData: {fileID: 0}
   arriveDistance: 0.5
+  playerData: {fileID: 0}
 --- !u!114 &4609660226562951123
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -389,6 +358,40 @@ MonoBehaviour:
   data: {fileID: 2144469862620939367}
   MinTakeDamageTime: 0.5
   lastTakeDamageTime: 0
+--- !u!114 &6001849235604245529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6809923701024963749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ff3ba0becae47b8b9381191598957c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 1
+  syncMode: 0
+  syncInterval: 0
+  target: {fileID: 7098034472124595003}
+  syncPosition: 1
+  syncRotation: 1
+  syncScale: 0
+  onlySyncOnChange: 1
+  compressRotation: 1
+  interpolatePosition: 1
+  interpolateRotation: 1
+  interpolateScale: 1
+  coordinateSpace: 0
+  sendIntervalMultiplier: 1
+  timelineOffset: 0
+  showGizmos: 0
+  showOverlay: 0
+  overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
+  onlySyncOnChangeCorrectionMultiplier: 2
+  rotationSensitivity: 0.01
+  positionPrecision: 0.01
+  scalePrecision: 0.01
 --- !u!1001 &8503992538493780095
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -403,7 +406,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2424065361814579067, guid: ed3753a29c14c9e4a9d4dc4f3485a361, type: 3}
       propertyPath: m_Text
-      value: HP:10
+      value: HP:3
       objectReference: {fileID: 0}
     - target: {fileID: 3619527904073868975, guid: ed3753a29c14c9e4a9d4dc4f3485a361, type: 3}
       propertyPath: m_Name

@@ -6,75 +6,32 @@ using UnityEngine;
 public class Attack : NetworkBehaviour
 {
     [Header("攻击通用设置")]
-    [SerializeField] protected string tagName = "Player";
-    [SerializeField] protected float damageInterval = 0.5f;
-
-    protected EntityData playerData;
-    private readonly Dictionary<EntityData, Coroutine> damageCoroutines = new();
-
+    [SerializeField] protected string AvoidTagName = "_";
+    [Tooltip("指定攻击检测的图层")]
+    [SerializeField] private LayerMask targetLayer = 1 << 6; // 默认为Monster图层（假设为第6层）
+    public EntityData Data;
+    
     void Start()
     {
-        playerData = GetComponent<EntityData>();
+        Data = GetComponent<EntityData>();
+        AvoidTagName = Data.gameObject.tag;
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    public void OnCollisionStay2D(Collision2D collision)
     {
-        if (!isServer) return;
-        if (collision.gameObject.CompareTag(tagName)) return;
+        if (!isServer) return; // ✅ 确保只有服务器处理攻击
 
-        EntityData otherPlayer = collision.gameObject.GetComponent<EntityData>();
-        if (otherPlayer == null || otherPlayer.isInvincible) return;
+        // 检查碰撞对象是否在指定图层
+        if ((targetLayer & (1 << collision.gameObject.layer)) == 0)
+            return;
 
-        ProcessCombat(otherPlayer);
+        if (collision.gameObject.CompareTag(AvoidTagName))
+            return;
 
-        if (!damageCoroutines.ContainsKey(otherPlayer))
+        HP otherPlayer = collision.gameObject.GetComponent<HP>();
+        if (otherPlayer != null)
         {
-            Coroutine c = StartCoroutine(DealContinuousDamage(otherPlayer));
-            damageCoroutines.Add(otherPlayer, c);
+            otherPlayer.TakeDamage(Data.attack);
         }
-    }
-
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        if (!isServer) return;
-
-        EntityData otherPlayer = collision.gameObject.GetComponent<EntityData>();
-        if (otherPlayer != null && damageCoroutines.ContainsKey(otherPlayer))
-        {
-            StopCoroutine(damageCoroutines[otherPlayer]);
-            damageCoroutines.Remove(otherPlayer);
-        }
-    }
-
-    private IEnumerator DealContinuousDamage(EntityData otherPlayer)
-    {
-        while (otherPlayer != null)
-        {
-            yield return new WaitForSeconds(damageInterval);
-            if (!IsStillCollidingWith(otherPlayer))
-                break;
-
-            ProcessCombat(otherPlayer);
-        }
-
-        if (damageCoroutines.ContainsKey(otherPlayer))
-            damageCoroutines.Remove(otherPlayer);
-    }
-
-    private bool IsStillCollidingWith(EntityData otherPlayer)
-    {
-        Collider2D myCollider = GetComponent<Collider2D>();
-        Collider2D otherCollider = otherPlayer.GetComponent<Collider2D>();
-        if (myCollider == null || otherCollider == null)
-            return false;
-
-        return myCollider.IsTouching(otherCollider);
-    }
-
-    [Command]
-    private void ProcessCombat(EntityData otherPlayer)
-    {
-        if (otherPlayer.hp <= 0) return;
-        otherPlayer.CmdTakeDamage(-playerData.attack);
     }
 }

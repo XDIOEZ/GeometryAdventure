@@ -77,8 +77,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -657188715
-  m_SortingLayer: 3
+  m_SortingLayerID: 2127643973
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0.6301887, g: 0.4128114, b: 0.20332502, a: 1}
@@ -232,7 +232,7 @@ MonoBehaviour:
   playerName: "\u8346\u68D8"
   playerColor: {r: 0.6301887, g: 0.4128114, b: 0.20332502, a: 1}
   hp: 999
-  attack: 5
+  attack: 2
   speed: 5
   isInvincible: 0
   invincibleDuration: 1
@@ -296,7 +296,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5343440867337590574, guid: ed3753a29c14c9e4a9d4dc4f3485a361, type: 3}
       propertyPath: m_Text
-      value: ATK:5
+      value: ATK:2
       objectReference: {fileID: 0}
     - target: {fileID: 6755059278800792870, guid: ed3753a29c14c9e4a9d4dc4f3485a361, type: 3}
       propertyPath: m_Pivot.x
