@@ -1,55 +1,80 @@
 ﻿using Mirror;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Attack : NetworkBehaviour
 {
-    #region Fields
-    [Tooltip("用于标识玩家对象的标签")]
+    [Header("攻击通用设置")]
     [SerializeField] protected string tagName = "Player";
+    [SerializeField] protected float damageInterval = 0.5f;
 
-    public PlayerData playerData;
+    protected EntityData playerData;
+    private readonly Dictionary<EntityData, Coroutine> damageCoroutines = new();
 
-    #endregion
-
-    #region Unity Lifecycle
-
-    private void Start()
+    void Start()
     {
-        playerData = GetComponent<PlayerData>();
+        playerData = GetComponent<EntityData>();
     }
 
-    public virtual void OnCollisionEnter2D(Collision2D collision)
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        // 确保是本地玩家触发的逻辑
-        if (!isLocalPlayer) return;
-        
-        if (collision.gameObject.CompareTag(tagName))
-        {
-            return;
-        }
+        if (!isServer) return;
+        if (collision.gameObject.CompareTag(tagName)) return;
 
-        PlayerData otherPlayer = collision.gameObject.GetComponent<PlayerData>();
-        if (otherPlayer != null)
+        EntityData otherPlayer = collision.gameObject.GetComponent<EntityData>();
+        if (otherPlayer == null || otherPlayer.isInvincible) return;
+
+        ProcessCombat(otherPlayer);
+
+        if (!damageCoroutines.ContainsKey(otherPlayer))
         {
-            // 调用自己的 Command，让服务器来处理战斗逻辑
-            CmdProcessCombat(otherPlayer);
+            Coroutine c = StartCoroutine(DealContinuousDamage(otherPlayer));
+            damageCoroutines.Add(otherPlayer, c);
         }
     }
 
-    #endregion
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (!isServer) return;
 
-    #region Commands
+        EntityData otherPlayer = collision.gameObject.GetComponent<EntityData>();
+        if (otherPlayer != null && damageCoroutines.ContainsKey(otherPlayer))
+        {
+            StopCoroutine(damageCoroutines[otherPlayer]);
+            damageCoroutines.Remove(otherPlayer);
+        }
+    }
 
-    /// <summary>
-    /// 处理战斗逻辑的命令
-    /// </summary>
-    /// <param name="otherPlayer">被攻击的玩家数据组件</param>
+    private IEnumerator DealContinuousDamage(EntityData otherPlayer)
+    {
+        while (otherPlayer != null)
+        {
+            yield return new WaitForSeconds(damageInterval);
+            if (!IsStillCollidingWith(otherPlayer))
+                break;
+
+            ProcessCombat(otherPlayer);
+        }
+
+        if (damageCoroutines.ContainsKey(otherPlayer))
+            damageCoroutines.Remove(otherPlayer);
+    }
+
+    private bool IsStillCollidingWith(EntityData otherPlayer)
+    {
+        Collider2D myCollider = GetComponent<Collider2D>();
+        Collider2D otherCollider = otherPlayer.GetComponent<Collider2D>();
+        if (myCollider == null || otherCollider == null)
+            return false;
+
+        return myCollider.IsTouching(otherCollider);
+    }
+
     [Command]
-    protected virtual void CmdProcessCombat(PlayerData otherPlayer)
+    private void ProcessCombat(EntityData otherPlayer)
     {
-        Debug.Log($"{gameObject.name} 攻击了 {otherPlayer.playerName}");
-        otherPlayer.CmdAddHp(-playerData.attack);
+        if (otherPlayer.hp <= 0) return;
+        otherPlayer.CmdTakeDamage(-playerData.attack);
     }
-
-    #endregion
 }

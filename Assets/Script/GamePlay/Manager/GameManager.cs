@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     [Tooltip("当前游戏中的所有玩家列表")]
     [ShowInInspector]
-    public List<PlayerData> players = new List<PlayerData>();
+    public List<EntityData> players = new List<EntityData>();
     
     #endregion
 
@@ -49,7 +49,7 @@ public class GameManager : MonoBehaviour
     /// 当玩家进入游戏时调用
     /// </summary>
     /// <param name="player">进入游戏的玩家数据</param>
-    public void AddPlayer(PlayerData player)
+    public void AddPlayer(EntityData player)
     {
         if (!players.Contains(player))
         {
@@ -62,7 +62,7 @@ public class GameManager : MonoBehaviour
 /// 当玩家离开游戏时调用
 /// </summary>
 /// <param name="player">离开游戏的玩家数据</param>
-public void RemovePlayer(PlayerData player)
+public void RemovePlayer(EntityData player)
 {
     if (players.Contains(player))
     {
@@ -85,7 +85,7 @@ public void RemovePlayer(PlayerData player)
     /// </summary>
     /// <param name="index">玩家索引</param>
     /// <returns>玩家数据</returns>
-    public PlayerData GetPlayer(int index)
+    public EntityData GetPlayer(int index)
     {
         if (index >= 0 && index < players.Count)
         {
@@ -99,9 +99,9 @@ public void RemovePlayer(PlayerData player)
     /// </summary>
     /// <param name="name">玩家名称</param>
     /// <returns>玩家数据</returns>
-    public PlayerData FindPlayerByName(string name)
+    public EntityData FindPlayerByName(string name)
     {
-        foreach (PlayerData player in players)
+        foreach (EntityData player in players)
         {
             if (player.playerName == name)
             {

@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 97634652314583656}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.35, y: -2.13, z: 0}
+  m_LocalPosition: {x: 6.6599975, y: -2.13, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -89,7 +89,7 @@ Transform:
   m_GameObject: {fileID: 4282816979208757437}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.25, y: -2.13, z: 0}
+  m_LocalPosition: {x: 9.660004, y: -2.13, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -112,6 +112,7 @@ GameObject:
   - component: {fileID: 7462518792644862192}
   - component: {fileID: 538278450528769446}
   - component: {fileID: 4609660226562951123}
+  - component: {fileID: 1641482382157131600}
   m_Layer: 8
   m_Name: Silme
   m_TagString: Monster
@@ -252,6 +253,7 @@ MonoBehaviour:
   playerColor: {r: 0, g: 1, b: 0.118023396, a: 1}
   hp: 10
   attack: 1
+  speed: 3
   isInvincible: 0
   invincibleDuration: 1
   playerSpriteRenderer: {fileID: 74319799813207014}
@@ -264,7 +266,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6809923701024963749}
-  m_BodyType: 0
+  m_BodyType: 1
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -349,7 +351,8 @@ MonoBehaviour:
   waypoints:
   - {fileID: 1312229344564528826}
   - {fileID: 4036966224970158405}
-  moveSpeed: 3
+  RandomSpeedOffset: {x: -1, y: 1}
+  playerData: {fileID: 0}
   arriveDistance: 0.5
 --- !u!114 &4609660226562951123
 MonoBehaviour:
@@ -366,8 +369,26 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  tagName: Monster
-  playerData: {fileID: 0}
+  AvoidTagName: Player
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  Data: {fileID: 0}
+--- !u!114 &1641482382157131600
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6809923701024963749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeb437ef5d03bdc4d871f788abb622b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: {fileID: 2144469862620939367}
+  MinTakeDamageTime: 0.5
+  lastTakeDamageTime: 0
 --- !u!1001 &8503992538493780095
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -6,12 +6,12 @@ using UnityEngine.InputSystem;
 
 public class Controller_AddPower : NetworkBehaviour
 {
-    private PlayerData playerData;
+    private EntityData playerData;
     private Controller_PlayerInput playerInput;
     
     private void Awake()
     {
-        playerData = GetComponent<PlayerData>();
+        playerData = GetComponent<EntityData>();
         playerInput = GetComponent<Controller_PlayerInput>();
     }
     

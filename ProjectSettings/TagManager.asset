@@ -6,6 +6,7 @@ TagManager:
   tags:
   - OnlyOne
   - Monster
+  - Ground
   layers:
   - Default
   - TransparentFX

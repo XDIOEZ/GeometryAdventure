@@ -4,16 +4,12 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-/// <summary>
-/// 玙家数据管理类
-/// 负责管理玩家名称和颜色的同步显示
-/// </summary>
-public class PlayerData : NetworkBehaviour
+public class EntityData : NetworkBehaviour
 {
     #region 字段定义
 
     [SyncVar(hook = nameof(OnNameChanged))]
-    public string playerName = "Player";
+    public string playerName = "Entity";
 
     [SyncVar(hook = nameof(OnColorChanged))]
     public Color playerColor = Color.white;
@@ -24,6 +20,10 @@ public class PlayerData : NetworkBehaviour
     [SyncVar(hook = nameof(OnAttackChanged))]
     [Tooltip("玩家攻击力")]
     public int attack = 1;
+
+    [SyncVar(hook = nameof(OnSpeedChanged))]
+    [Tooltip("玩家移动速度")]
+    public float speed = 5.0f;
 
     [SyncVar(hook = nameof(OnInvincibleChanged))]
     [Tooltip("无敌状态")]
@@ -56,17 +56,23 @@ public class PlayerData : NetworkBehaviour
         UpdateColorDisplay(playerColor);
         UpdateHpDisplay(hp);
         UpdateAtkDisplay(attack);
+        UpdateSpeedDisplay(speed);
         GameManager.Instance.AddPlayer(this);
     }
 
     protected override void OnValidate()
     {
         basePanel = GetComponentInChildren<BasePanel>();
+        if (basePanel == null)
+        {
+            return;
+        }
         basePanel.CollectUIComponents();
         UpdateNameDisplay(playerName);
         UpdateColorDisplay(playerColor);
         UpdateHpDisplay(hp);
         UpdateAtkDisplay(attack);
+        UpdateSpeedDisplay(speed);
     }
     public override void OnStartLocalPlayer()
     {
@@ -107,15 +113,13 @@ public class PlayerData : NetworkBehaviour
         UpdateColorDisplay(newColor);
     }
 
-    /// <summary>
-    /// 玩家生命值变更回调
-    /// </summary>
-    /// <param name="oldHp">旧生命值</param>
-    /// <param name="newHp">新生命值</param>
     public void OnHpChanged(int oldHp, int newHp)
     {
-        // 确保在所有客户端上正确更新生命值显示
         UpdateHpDisplay(newHp);
+        if (isServer && newHp <= 0)
+        {
+            ServerDie();
+        }
     }
 
     /// <summary>
@@ -126,6 +130,16 @@ public class PlayerData : NetworkBehaviour
     public void OnAttackChanged(int oldAttack, int newAttack)
     {
         UpdateAtkDisplay(newAttack);
+    }
+
+    /// <summary>
+    /// 玩家速度变更回调
+    /// </summary>
+    /// <param name="oldSpeed">旧速度</param>
+    /// <param name="newSpeed">新速度</param>
+    public void OnSpeedChanged(float oldSpeed, float newSpeed)
+    {
+        UpdateSpeedDisplay(newSpeed);
     }
 
     /// <summary>
@@ -152,10 +166,6 @@ public class PlayerData : NetworkBehaviour
 
     #region 显示更新方法
 
-    /// <summary>
-    /// 更新名称显示
-    /// </summary>
-    /// <param name="name">要显示的名称</param>
     private void UpdateNameDisplay(string name)
     {
         // 检查basePanel是否存在
@@ -170,10 +180,7 @@ public class PlayerData : NetworkBehaviour
         }
     }
 
-    /// <summary>
-    /// 更新颜色显示
-    /// </summary>
-    /// <param name="color">要显示的颜色</param>
+
     private void UpdateColorDisplay(Color color)
     {
         // 检查SpriteRenderer是否存在
@@ -187,17 +194,20 @@ public class PlayerData : NetworkBehaviour
         }
     }
 
-    /// <summary>
-    /// 更新力量显示
-    /// </summary>
+  
     private void UpdateHpDisplay(int Hp)
     {
-            // 获取力量显示文本组件并设置文本
-            var strengthText = basePanel.GetText_Legacy("HP");
-            if (strengthText != null)
-            {
-                strengthText.text = "HP:" + Hp;
-            }
+        // 获取力量显示文本组件并设置文本
+         var strengthText = basePanel.GetText_Legacy("HP");
+         if (strengthText != null)
+         {
+             strengthText.text = "HP:" + Hp;
+        }
+
+        if(Hp <= 0)
+        {
+           Die();
+        }
     }
 
     /// <summary>
@@ -209,6 +219,18 @@ public class PlayerData : NetworkBehaviour
         if (strengthText != null)
         {
             strengthText.text = "ATK:" + ATK;
+        }
+    }
+
+    /// <summary>
+    /// 更新速度显示
+    /// </summary>
+    private void UpdateSpeedDisplay(float Speed)
+    {
+        var speedText = basePanel.GetText_Legacy("SPEED");
+        if (speedText != null)
+        {
+            speedText.text = "SPD:" + Speed.ToString("F1");
         }
     }
 
@@ -237,63 +259,75 @@ public class PlayerData : NetworkBehaviour
     }
 
     /// <summary>
-    /// 增加玩家力量命令
+    /// 更改玩家速度命令
     /// </summary>
-    /// <param name="amount">增加的力量值</param>
+    /// <param name="newSpeed">新速度</param>
+    [Command]
+    public void CmdChangeSpeed(float newSpeed)
+    {
+        speed = newSpeed;
+    }
+
+    [Command]
+    public void CmdTakeDamage(int damage)
+    {
+        if (isInvincible || hp <= 0)
+            return;
+
+        hp -= damage;
+
+        if (hp <= 0)
+        {
+            ServerDie();
+        }
+    }
+
     [Server]
-    public void CmdAddHp(int amount)
+    public void TakeDamage(int damage)
     {
-        hp += amount;
+        if (isInvincible) return;
+
+        hp -= damage;
 
         if (hp <= 0)
         {
-            hp = 0;
-            CmdDie();
+            ServerDie();
         }
     }
-    public void ReportAddHp(int amount)
-    {
-        hp += amount;
 
-        if (hp <= 0)
-        {
-            hp = 0;
-            CmdDie();
-        }
-    }
 
     #endregion
 
-    [Server]
-    public void CmdDie()
+    public void Die()
     {
-        Debug.Log($"玩家 {playerName} 死亡，进入失活状态");
+        Debug.Log($"玩家 {playerName} 死亡（客户端表现）");
+        var sr = GetComponent<SpriteRenderer>();
+        if (sr != null)
+            sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, 0.2f);
 
-        // 移除逻辑层引用（从 GameManager 活跃玩家列表中移除）
-        GameManager.Instance.RemovePlayer(this);
-
-        // 设置玩家为“失活”状态
-        RpcSetInactive();
-
-        // 禁止该玩家再参与碰撞、战斗等
-        isInvincible = true;
-        hp = 0;
-    }
-    [ClientRpc]
-    private void RpcSetInactive()
-    {
-        // 禁用玩家外观、碰撞、输入控制等
-        GetComponent<Collider2D>().enabled = false;
+        var col = GetComponent<Collider2D>();
+        if (col != null) col.enabled = false;
 
         var rb = GetComponent<Rigidbody2D>();
         if (rb != null) rb.simulated = false;
-
-        // 变灰/半透明显示死亡状态
-        var sr = GetComponent<SpriteRenderer>();
-        if (sr != null) sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, 0.2f);
-
-        Debug.Log($"{playerName} 已死亡（客户端表现）");
     }
 
+    [Server]
+    public void ServerDie()
+    {
+        if (hp <= 0)
+        {
+            hp = 0;
+            isInvincible = true;
+            RpcOnDie(); // 广播给所有客户端执行死亡表现
+            GameManager.Instance.RemovePlayer(this);
+        }
+    }
+
+    [ClientRpc]
+    void RpcOnDie()
+    {
+        Die(); // 客户端执行视觉表现
+    }
 
 }

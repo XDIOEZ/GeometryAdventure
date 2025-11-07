@@ -13,7 +13,7 @@ public class Controller_SendText : NetworkBehaviour
 public NetworkManager networkManager;
 
 [Header("Player Data")]
-public PlayerData playerData;
+public EntityData playerData;
 
 [Header("UI Components")]
 [Tooltip("面板名称")]

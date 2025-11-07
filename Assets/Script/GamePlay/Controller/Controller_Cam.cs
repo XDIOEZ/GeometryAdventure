@@ -18,6 +18,11 @@ public class Controller_Cam : NetworkBehaviour
             {
                 audioListener.enabled = true;
             }
+            Camera camera = GetComponentInChildren<Camera>();
+            if (camera != null)
+            {
+                camera.enabled = true;
+            }
         }
     }
 
