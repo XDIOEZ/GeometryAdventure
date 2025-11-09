@@ -96,8 +96,10 @@ public class Controller_Jump : MonoBehaviour
         Vector2 rightFoot = new Vector2(groundCheck.position.x + footSpacing, groundCheck.position.y);
 
         // 使用射线投射过滤器排除自身碰撞体
-        RaycastHit2D leftHit = Physics2D.Raycast(leftFoot, Vector2.down, groundCheckDistance, groundLayerMask);
-        RaycastHit2D rightHit = Physics2D.Raycast(rightFoot, Vector2.down, groundCheckDistance, groundLayerMask);
+        RaycastHit2D leftHit = 
+            Physics2D.Raycast(leftFoot, Vector2.down, groundCheckDistance, groundLayerMask);
+        RaycastHit2D rightHit = 
+            Physics2D.Raycast(rightFoot, Vector2.down, groundCheckDistance, groundLayerMask);
 
         // 检查射线是否击中了自身
         bool leftValid = leftHit.collider != null && leftHit.collider.gameObject != gameObject;

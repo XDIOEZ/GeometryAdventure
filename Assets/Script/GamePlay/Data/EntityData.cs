@@ -166,7 +166,7 @@ public class EntityData : NetworkBehaviour
 
     #region 显示更新方法
 
-    private void UpdateNameDisplay(string name)
+    public void UpdateNameDisplay(string name)
     {
         // 检查basePanel是否存在
         if (basePanel != null)
@@ -310,6 +310,8 @@ public class EntityData : NetworkBehaviour
 
         var rb = GetComponent<Rigidbody2D>();
         if (rb != null) rb.simulated = false;
+        var cam = GetComponentInChildren<Camera>();
+        if (cam != null) cam.enabled = false;
     }
 
     [Server]

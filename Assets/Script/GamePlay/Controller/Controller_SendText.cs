@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Mirror;
+using System;
+using System.Linq;
 
 public class Controller_SendText : NetworkBehaviour
 {
@@ -33,36 +35,12 @@ public string sceneTextName = "SceneText";
     #region 属性
     
     public BasePanel basePanel { get; private set; }
-    
+
     #endregion
 
     #region Unity生命周期方法
-    
-    public override void OnStartLocalPlayer()
-    {
-        // 只有本地玩家才需要处理UI交互
-        if (isLocalPlayer)
-        {
-            // 通过UIManager获取指定面板
-            if (UIManager.Instance != null)
-            {
-                basePanel = UIManager.Instance.GetPanel(panelName);
-                if (basePanel == null)
-                {
-                    Debug.LogWarning($"Panel '{panelName}' not found in UIManager!");
-                }
-            }
-            else
-            {
-                Debug.LogWarning("UIManager instance not found!");
-            }
-            
-            // 初始化UI事件
-            InitializeUIEvents();
-        }
-    }
-    
-    public override void OnStartClient()
+
+    public void Start()
     {
         // 所有客户端都需要监听文本更新
         // 通过UIManager获取指定面板（用于显示文本）
@@ -70,6 +48,25 @@ public string sceneTextName = "SceneText";
         {
             basePanel = UIManager.Instance.GetPanel(panelName);
         }
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        // 通过UIManager获取指定面板
+        if (UIManager.Instance != null)
+        {
+            basePanel = UIManager.Instance.GetPanel(panelName);
+            if (basePanel == null)
+            {
+                Debug.LogWarning($"Panel '{panelName}' not found in UIManager!");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("UIManager instance not found!");
+        }
+        // 初始化UI事件
+        InitializeUIEvents();
     }
     
     private void OnDestroy()
@@ -83,7 +80,7 @@ public string sceneTextName = "SceneText";
                 sendButton.onClick.RemoveListener(SendText);
             }
             
-            TMP_InputField inputField = basePanel.GetInputField(inputFieldName);
+            var inputField = basePanel.GetInputField_Legacy(inputFieldName);
             if (inputField != null)
             {
                 inputField.onSubmit.RemoveListener(OnInputFieldSubmit);
@@ -110,7 +107,7 @@ public string sceneTextName = "SceneText";
             }
             
             // 也可以为输入框添加回车发送功能
-            TMP_InputField inputField = basePanel.GetInputField(inputFieldName);
+            var inputField = basePanel.GetInputField_Legacy(inputFieldName);
             if (inputField != null)
             {
                 inputField.onSubmit.AddListener(OnInputFieldSubmit);
@@ -133,10 +130,14 @@ public string sceneTextName = "SceneText";
     /// </summary>
     private void SendText()
     {
+        if (!isLocalPlayer)
+        {
+            return;
+        }
         if (basePanel == null) return;
         
         // 获取输入框文本
-        TMP_InputField inputField = basePanel.GetInputField(inputFieldName);
+        var inputField = basePanel.GetInputField_Legacy(inputFieldName);
         string text = "";
         if (inputField != null)
         {
@@ -170,7 +171,7 @@ public string sceneTextName = "SceneText";
             SendTextToScene(text);
             
             // 清空输入框
-            TMP_InputField inputField = basePanel.GetInputField(inputFieldName);
+            var inputField = basePanel.GetInputField_Legacy(inputFieldName);
             if (inputField != null)
             {
                 inputField.text = "";
@@ -180,7 +181,7 @@ public string sceneTextName = "SceneText";
     
     #endregion
 
- #region 文本发送相关方法
+    #region 文本发送相关方法
     
     
 /// <summary>
@@ -189,6 +190,14 @@ public string sceneTextName = "SceneText";
 /// <param name="text">要发送的文本</param>
 private void SendTextToScene(string text)
 {
+    // 检查是否为命令（以/开头）
+    if (text.StartsWith("/"))
+    {
+        // 处理命令
+        ProcessCommand(text);
+        return;
+    }
+    
     // 获取玩家名称
     string playerName = "Unknown";
     if (playerData != null)
@@ -225,7 +234,7 @@ private void RpcUpdateSceneText(string text)
     if (basePanel != null)
     {
         // 获取文本组件并直接修改其文本属性
-        TextMeshProUGUI sceneText = basePanel.GetText(sceneTextName);
+        var sceneText = basePanel.GetText_Legacy(sceneTextName);
         if (sceneText != null)
         {
             sceneText.text += text;
@@ -255,41 +264,118 @@ private void RpcUpdateSceneText(string text)
         if (basePanel != null)
         {
             // 获取文本组件并直接清空其文本属性
-            TextMeshProUGUI sceneText = basePanel.GetText(sceneTextName);
+            var sceneText = basePanel.GetText_Legacy(sceneTextName);
             if (sceneText != null)
             {
                 sceneText.text = "";
             }
         }
     }
-    
+    #endregion
+
+    #region 命令处理相关方法
+
     /// <summary>
-    /// 设置场景文本
+    /// 处理管理员命令
     /// </summary>
-    /// <param name="text">要设置的文本</param>
-    [Command]
-    public void CmdSetSceneText(string text)
+    private void ProcessCommand(string commandText)
     {
-        RpcSetSceneText(text);
-    }
-    
-    /// <summary>
-    /// 在所有客户端上设置场景文本
-    /// </summary>
-    /// <param name="text">要设置的文本</param>
-    [ClientRpc]
-    private void RpcSetSceneText(string text)
-    {
-        if (basePanel != null)
+        // 移除开头的斜杠
+        string command = commandText.Substring(1).Trim();
+
+        string[] parts = command.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0) return;
+
+        string cmd = parts[0].ToLower();
+        string[] args = parts.Skip(1).ToArray();
+
+        switch (cmd)
         {
-            // 获取文本组件并直接设置其文本属性
-            TextMeshProUGUI sceneText = basePanel.GetText(sceneTextName);
-            if (sceneText != null)
-            {
-                sceneText.text = text;
-            }
+            case "rename":
+                if (args.Length > 0)
+                {
+                    string newName = args[0].Trim('"');
+                    if (isLocalPlayer)
+                    {
+                        CmdRenamePlayer(newName);
+                    }
+                    else
+                    {
+                        ShowLocalCommandFeedback("错误: 权限不足");
+                    }
+                }
+                else
+                {
+                    ShowLocalCommandFeedback("错误: rename命令需要指定新名字");
+                }
+                break;
+
+            default:
+                ShowLocalCommandFeedback($"未知命令: {cmd}");
+                break;
         }
     }
-    
+
+    /// <summary>
+    /// 重命名玩家
+    /// </summary>
+    [Command]
+    private void CmdRenamePlayer(string newName)
+    {
+        if (!string.IsNullOrEmpty(newName) && newName.Length <= 20)
+        {
+            playerData.playerName = newName;
+            // 通知客户端
+            RpcPlayerRenamed(newName);
+        }
+        else
+        {
+            RpcShowCommandFeedback($"错误: 名字 '{newName}' 不合法，长度应在1-20个字符之间");
+        }
+    }
+
+    /// <summary>
+    /// 客户端接收到的新名字
+    /// </summary>
+    [ClientRpc]
+    private void RpcPlayerRenamed(string newName)
+    {
+        playerData.playerName = newName;
+        playerData.UpdateNameDisplay(playerData.playerName);
+        ShowLocalCommandFeedback($"玩家已更名为: {newName}");
+    }
+
+    /// <summary>
+    /// 广播命令反馈
+    /// </summary>
+    [ClientRpc]
+    private void RpcShowCommandFeedback(string message)
+    {
+        ShowLocalCommandFeedback(message);
+    }
+
+    /// <summary>
+    /// 本地 UI 显示反馈（不走网络）
+    /// </summary>
+    private void ShowLocalCommandFeedback(string message)
+    {
+        Debug.Log($"[系统] {message}");
+
+        // 这里放你的 UI 显示逻辑，例如：
+        // chatPanel.AddMessage($"[系统] {message}");
+    }
+
+    /// <summary>
+    /// 服务器显示系统消息
+    /// </summary>
+    [Command]
+    private void CmdSendSystemMessage(string message)
+    {
+        string formatted = $"[系统] {message}\n";
+        CmdAppendSceneText(formatted);
+    }
+
     #endregion
+
+
 }

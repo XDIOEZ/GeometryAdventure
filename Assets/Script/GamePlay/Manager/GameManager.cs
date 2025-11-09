@@ -54,7 +54,7 @@ public class GameManager : MonoBehaviour
         if (!players.Contains(player))
         {
             players.Add(player);
-            Debug.Log($"玩家 {player.playerName} 已加入游戏。当前玩家数量: {players.Count}");
+           // Debug.Log($"玩家 {player.playerName} 已加入游戏。当前玩家数量: {players.Count}");
         }
     }
     
@@ -67,7 +67,7 @@ public void RemovePlayer(EntityData player)
     if (players.Contains(player))
     {
         players.Remove(player);
-        Debug.Log($"玩家 {player.playerName} 已离开游戏。当前玩家数量: {players.Count}");
+       // Debug.Log($"玩家 {player.playerName} 已离开游戏。当前玩家数量: {players.Count}");
     }
 }
     

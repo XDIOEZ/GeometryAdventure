@@ -22,7 +22,7 @@ public class BasePanel : MonoBehaviour
     private Dictionary<string, Slider> sliders = new Dictionary<string, Slider>();
     private Dictionary<string, ScrollRect> scrollRects = new Dictionary<string, ScrollRect>();
     private Dictionary<string, Image> images = new Dictionary<string, Image>();
-
+    private Dictionary<string, InputField> legacyInputFields = new();
     public CanvasGroup canvasGroup;
     public RectTransform rectTransform;
     
@@ -78,6 +78,17 @@ public class BasePanel : MonoBehaviour
         sliders.Clear();
         scrollRects.Clear();
         images.Clear();
+        legacyInputFields.Clear();
+
+        // 获取所有子对象上的InputField组件
+        InputField[] allInputFields_legacy = GetComponentsInChildren<InputField>(true);
+        foreach (InputField inputField in allInputFields_legacy)
+        {
+            if (!legacyInputFields.ContainsKey(inputField.name))
+            {
+                legacyInputFields[inputField.name] = inputField;
+            }
+        }
 
         // 获取所有子对象上的Button组件
         Button[] allButtons = GetComponentsInChildren<Button>(true);
@@ -256,6 +267,16 @@ public class BasePanel : MonoBehaviour
     public TMP_InputField GetInputField(string inputFieldName)
     {
         if (inputFields.TryGetValue(inputFieldName, out TMP_InputField inputField))
+        {
+            return inputField;
+        }
+        Debug.LogWarning($"未找到名为 {inputFieldName} 的输入框");
+        return null;
+    }
+
+    public InputField GetInputField_Legacy(string inputFieldName)
+    {
+        if (legacyInputFields.TryGetValue(inputFieldName, out InputField inputField))
         {
             return inputField;
         }
