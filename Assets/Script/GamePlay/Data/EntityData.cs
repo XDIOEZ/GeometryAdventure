@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using UltEvents;
 using UnityEngine;
 
 public class EntityData : NetworkBehaviour
@@ -16,6 +17,9 @@ public class EntityData : NetworkBehaviour
 
     [SyncVar(hook = nameof(OnHpChanged))]
     public int hp = 10;
+
+    [Tooltip("玩家生命值变化事件")]
+    public UltEvent<int> onHPChanged = new();
 
     [SyncVar(hook = nameof(OnAttackChanged))]
     [Tooltip("玩家攻击力")]
@@ -116,6 +120,7 @@ public class EntityData : NetworkBehaviour
     public void OnHpChanged(int oldHp, int newHp)
     {
         UpdateHpDisplay(newHp);
+        onHPChanged.Invoke(newHp);
         if (isServer && newHp <= 0)
         {
             ServerDie();

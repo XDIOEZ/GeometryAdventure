@@ -379,6 +379,8 @@ MonoBehaviour:
   playerName: 
   playerColor: {r: 0, g: 0, b: 0, a: 0}
   hp: 10
+  onHPChanged:
+    _PersistentCalls: []
   attack: 1
   speed: 5
   isInvincible: 0
@@ -402,6 +404,7 @@ MonoBehaviour:
   syncInterval: 0
   networkManager: {fileID: 0}
   playerData: {fileID: 1783288446790169963}
+  basePanel: {fileID: 0}
   panelName: ChatPanel
   inputFieldName: InputField
   sendButtonName: SendButton
@@ -595,6 +598,8 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   itemSlots: []
+  CurrentIndex: 0
+  basePanel: {fileID: 0}
 --- !u!61 &1151761042474080198
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -648,33 +653,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4379154223894917634}
     m_Modifications:
-    - target: {fileID: 1021880132856409754, guid: ed3753a29c14c9e4a9d4dc4f3485a361, type: 3}
-      propertyPath: m_Text
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 2424065361814579067, guid: ed3753a29c14c9e4a9d4dc4f3485a361, type: 3}
-      propertyPath: m_Text
-      value: HP:10
-      objectReference: {fileID: 0}
-    - target: {fileID: 3143201034718297415, guid: ed3753a29c14c9e4a9d4dc4f3485a361, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3619527904073868975, guid: ed3753a29c14c9e4a9d4dc4f3485a361, type: 3}
       propertyPath: m_Name
       value: Info
-      objectReference: {fileID: 0}
-    - target: {fileID: 5148559564831767899, guid: ed3753a29c14c9e4a9d4dc4f3485a361, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5343440867337590574, guid: ed3753a29c14c9e4a9d4dc4f3485a361, type: 3}
-      propertyPath: m_Text
-      value: ATK:1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5985926589999946753, guid: ed3753a29c14c9e4a9d4dc4f3485a361, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6755059278800792870, guid: ed3753a29c14c9e4a9d4dc4f3485a361, type: 3}
       propertyPath: m_Pivot.x
@@ -755,10 +736,6 @@ PrefabInstance:
     - target: {fileID: 6755059278800792870, guid: ed3753a29c14c9e4a9d4dc4f3485a361, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8902233006897636443, guid: ed3753a29c14c9e4a9d4dc4f3485a361, type: 3}
-      propertyPath: m_SortingLayerID
-      value: -657188715
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

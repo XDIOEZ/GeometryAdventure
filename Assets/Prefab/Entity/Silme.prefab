@@ -113,6 +113,7 @@ GameObject:
   - component: {fileID: 4609660226562951123}
   - component: {fileID: 1641482382157131600}
   - component: {fileID: 6001849235604245529}
+  - component: {fileID: 2270436670898880499}
   m_Layer: 8
   m_Name: Silme
   m_TagString: Monster
@@ -177,7 +178,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -657188715
   m_SortingLayer: 3
-  m_SortingOrder: 0
+  m_SortingOrder: -1
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 1, b: 0.118023396, a: 1}
   m_FlipX: 0
@@ -252,6 +253,8 @@ MonoBehaviour:
   playerName: "\u53F2\u83B1\u59C6"
   playerColor: {r: 0, g: 1, b: 0.118023396, a: 1}
   hp: 3
+  onHPChanged:
+    _PersistentCalls: []
   attack: 1
   speed: 3
   isInvincible: 0
@@ -392,6 +395,26 @@ MonoBehaviour:
   rotationSensitivity: 0.01
   positionPrecision: 0.01
   scalePrecision: 0.01
+--- !u!114 &2270436670898880499
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6809923701024963749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da54c89d8675bfb4396fd6aed105cf18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  lootDatas:
+  - itemData: {fileID: 11400000, guid: f5e9cb219a707744588e9459b43f44be, type: 2}
+    count: 1
+  - itemData: {fileID: 11400000, guid: 453b5937c6a5691429198a99feba37f3, type: 2}
+    count: 1
 --- !u!1001 &8503992538493780095
 PrefabInstance:
   m_ObjectHideFlags: 0

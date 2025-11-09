@@ -118,6 +118,15 @@ public partial class @GamePlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ChangeSlot"",
+                    ""type"": ""Value"",
+                    ""id"": ""10db1b94-9446-4bde-8975-8d16ca75bb93"",
+                    ""expectedControlType"": ""Integer"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -195,6 +204,28 @@ public partial class @GamePlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b690188e-d389-4b75-a053-e890615781b3"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ChangeSlot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4e431a2a-0bb0-4d6b-999f-1a2521967e27"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ChangeSlot"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -785,6 +816,7 @@ public partial class @GamePlayerInput: IInputActionCollection2, IDisposable
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
         m_Player_AddPower = m_Player.FindAction("AddPower", throwIfNotFound: true);
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
+        m_Player_ChangeSlot = m_Player.FindAction("ChangeSlot", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -881,6 +913,7 @@ public partial class @GamePlayerInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Move;
     private readonly InputAction m_Player_AddPower;
     private readonly InputAction m_Player_Jump;
+    private readonly InputAction m_Player_ChangeSlot;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -904,6 +937,10 @@ public partial class @GamePlayerInput: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Jump".
         /// </summary>
         public InputAction @Jump => m_Wrapper.m_Player_Jump;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/ChangeSlot".
+        /// </summary>
+        public InputAction @ChangeSlot => m_Wrapper.m_Player_ChangeSlot;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -939,6 +976,9 @@ public partial class @GamePlayerInput: IInputActionCollection2, IDisposable
             @Jump.started += instance.OnJump;
             @Jump.performed += instance.OnJump;
             @Jump.canceled += instance.OnJump;
+            @ChangeSlot.started += instance.OnChangeSlot;
+            @ChangeSlot.performed += instance.OnChangeSlot;
+            @ChangeSlot.canceled += instance.OnChangeSlot;
         }
 
         /// <summary>
@@ -959,6 +999,9 @@ public partial class @GamePlayerInput: IInputActionCollection2, IDisposable
             @Jump.started -= instance.OnJump;
             @Jump.performed -= instance.OnJump;
             @Jump.canceled -= instance.OnJump;
+            @ChangeSlot.started -= instance.OnChangeSlot;
+            @ChangeSlot.performed -= instance.OnChangeSlot;
+            @ChangeSlot.canceled -= instance.OnChangeSlot;
         }
 
         /// <summary>
@@ -1280,6 +1323,13 @@ public partial class @GamePlayerInput: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnJump(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ChangeSlot" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnChangeSlot(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

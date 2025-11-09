@@ -232,6 +232,8 @@ MonoBehaviour:
   playerName: "\u8346\u68D8"
   playerColor: {r: 0.6301887, g: 0.4128114, b: 0.20332502, a: 1}
   hp: 999
+  onHPChanged:
+    _PersistentCalls: []
   attack: 2
   speed: 5
   isInvincible: 0

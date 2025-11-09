@@ -102,8 +102,13 @@ public class UIManager : MonoBehaviour
         {
             return panel;
         }
-        
+        InitializePanels();
         Debug.LogWarning($"Panel '{panelName}' not found!");
+
+        if (panels.TryGetValue(panelName, out  panel))
+        {
+            return panel;
+        }
         return null;
     }
 

@@ -17,6 +17,9 @@ public NetworkManager networkManager;
 [Header("Player Data")]
 public EntityData playerData;
 
+
+    public BasePanel basePanel;
+
 [Header("UI Components")]
 [Tooltip("面板名称")]
 public string panelName = "ChatPanel";
@@ -32,11 +35,6 @@ public string sceneTextName = "SceneText";
 
 #endregion
 
-    #region 属性
-    
-    public BasePanel basePanel { get; private set; }
-
-    #endregion
 
     #region Unity生命周期方法
 
