@@ -1,5 +1,6 @@
 ﻿using Mirror;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,7 +8,7 @@ using UnityEngine.UI;
 /// <summary>
 /// 玩家背包系统，管理物品槽位和物品拾取
 /// </summary>
-public class Inventory : NetworkBehaviour
+public class Inventory : NetworkBehaviour,ISaveLoad
 {
     #region 字段和属性
 
@@ -21,17 +22,25 @@ public class Inventory : NetworkBehaviour
     [Tooltip("基础面板引用")]
     public BasePanel basePanel;
 
+    public ConId conId;
+
     #endregion
 
     #region Unity生命周期
 
+
+
+    public void Awake()
+    {
+        // 🔥 提前初始化，避免反序列化时为空
+        basePanel = transform.parent?.GetComponentInChildren<BasePanel>();
+    }
     /// <summary>
     /// 初始化背包系统，设置输入控制监听
     /// </summary>
     public void Start()
     {
-        basePanel = transform.parent.GetComponentInChildren<BasePanel>();
-
+      //  conId = GetComponentInParent<ConId>();
         if (!isLocalPlayer)
         {
             return;
@@ -50,6 +59,34 @@ public class Inventory : NetworkBehaviour
                 ChangeIndex(CurrentIndex - 1);
             }
         };
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        CmdLoadData(GetId());
+    }
+
+    [Command]
+    public void CmdLoadData(string id)
+    {
+        // 注册
+        SaveManager.instance.RegisterSaveObject(this);
+
+        // 加载
+        var data = SaveManager.instance.LoadData(id);
+        if (data == null)
+        {
+            Debug.Log("Inventory: No save data found.");
+            return;
+        }
+        RpcLoadData(data);
+    }
+
+    [ClientRpc]
+    public void RpcLoadData(string[] data)
+    {
+        Load(data);
+        UpdateInventoryUI();
     }
 
 
@@ -149,13 +186,16 @@ public class Inventory : NetworkBehaviour
 
     #region UI更新
 
-    /// <summary>
-    /// 更新背包UI显示
-    /// </summary>
-    /// <param name="oldCurrentIndex">旧索引</param>
-    /// <param name="newCurrentIndex">新索引</param>
     public void UpdateInventoryUI(int oldCurrentIndex, int newCurrentIndex)
     {
+        // 🔒 安全防护：确保数据有效
+        if (basePanel == null || itemSlots == null || itemSlots.Count == 0)
+            return;
+
+        // 🔒 确保 newIndex 合法
+        if (newCurrentIndex < 0 || newCurrentIndex >= itemSlots.Count)
+            return;
+
         Text nameText = basePanel.GetText_Legacy("Name*Count");
         nameText.text = itemSlots[newCurrentIndex].ToString();
     }
@@ -170,5 +210,35 @@ public class Inventory : NetworkBehaviour
     }
 
 
+
     #endregion
+    #region ISaveLoad接口
+
+    public string[] Save()
+    {
+        string[] data = new string[2];
+        data[0] = ItemSlot.SaveAll(itemSlots);
+        data[1] = CurrentIndex.ToString();
+        return data;
+    }
+
+    public void Load(string[] data)
+    {
+        itemSlots = ItemSlot.LoadAll(data[0]);
+        CurrentIndex = int.Parse(data[1]);
+    }
+    public string GetId()
+    {
+        return $"{conId.myConnectionId}_Inventory";
+    }
+
+/*    public string GetId()
+    {
+        //TODO 获取父对象上的网络组件的ID
+        string id  = NetworkClient.connection.connectionId.ToString();
+        id+= "_Inventory";
+        return id;
+    }*/
+    #endregion
+
 }

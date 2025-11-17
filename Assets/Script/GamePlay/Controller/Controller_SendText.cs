@@ -11,30 +11,33 @@ public class Controller_SendText : NetworkBehaviour
 {
     #region 字段定义
     
-[Header("Network")]
-public NetworkManager networkManager;
+    [Header("Network")]
+    public NetworkManager networkManager;
 
-[Header("Player Data")]
-public EntityData playerData;
+    [Header("Player Data")]
+    public EntityData playerData;
 
+    [Header("UI Components")]
+    [Tooltip("面板预制体")]
+    public GameObject basePanelPrefab; // 现在场景中不会拥有BasePanel而是需要再开始的时候自动实例化一个面板出来
 
-    public BasePanel basePanel;
+    [Tooltip("面板名称")]
+    public string panelName = "ChatPanel";
 
-[Header("UI Components")]
-[Tooltip("面板名称")]
-public string panelName = "ChatPanel";
+    [Tooltip("输入框名称")]
+    public string inputFieldName = "InputField";
 
-[Tooltip("输入框名称")]
-public string inputFieldName = "InputField";
+    [Tooltip("发送按钮名称")]
+    public string sendButtonName = "SendButton";
 
-[Tooltip("发送按钮名称")]
-public string sendButtonName = "SendButton";
+    [Tooltip("场景文本显示名称")]
+    public string sceneTextName = "SceneText";
 
-[Tooltip("场景文本显示名称")]
-public string sceneTextName = "SceneText";
+    // 存储实例化的面板引用
+    private BasePanel basePanelInstance;
+    private BasePanel basePanel;
 
-#endregion
-
+    #endregion
 
     #region Unity生命周期方法
 
@@ -50,21 +53,14 @@ public string sceneTextName = "SceneText";
 
     public override void OnStartLocalPlayer()
     {
-        // 通过UIManager获取指定面板
-        if (UIManager.Instance != null)
+        // 为本地玩家实例化UI面板
+        if (isLocalPlayer)
         {
-            basePanel = UIManager.Instance.GetPanel(panelName);
-            if (basePanel == null)
-            {
-                Debug.LogWarning($"Panel '{panelName}' not found in UIManager!");
-            }
+            InitializeUIPanel();
+            
+            // 初始化UI事件
+            InitializeUIEvents();
         }
-        else
-        {
-            Debug.LogWarning("UIManager instance not found!");
-        }
-        // 初始化UI事件
-        InitializeUIEvents();
     }
     
     private void OnDestroy()
@@ -84,11 +80,64 @@ public string sceneTextName = "SceneText";
                 inputField.onSubmit.RemoveListener(OnInputFieldSubmit);
             }
         }
+        
+        // 销毁实例化的面板
+        if (isLocalPlayer && basePanelInstance != null)
+        {
+            Destroy(basePanelInstance.gameObject);
+        }
     }
     
     #endregion
 
     #region UI初始化方法
+    
+    /// <summary>
+    /// 初始化UI面板
+    /// </summary>
+    private void InitializeUIPanel()
+    {
+        // 如果提供了预制体，则实例化面板
+        if (basePanelPrefab != null)
+        {
+            GameObject panelObject = Instantiate(basePanelPrefab);
+            basePanelInstance = panelObject.GetComponent<BasePanel>();
+            
+            if (basePanelInstance != null)
+            {
+                basePanel = basePanelInstance;
+                
+                // 确保面板不被销毁
+                DontDestroyOnLoad(panelObject);
+                
+                // 如果UIManager存在，注册面板
+                if (UIManager.Instance != null)
+                {
+                    UIManager.Instance.RegisterPanel(panelName, basePanelInstance);
+                }
+            }
+            else
+            {
+                Debug.LogError("BasePanel组件在预制体中未找到！");
+            }
+        }
+        else
+        {
+            // 如果没有提供预制体，尝试从UIManager获取现有面板
+            if (UIManager.Instance != null)
+            {
+                basePanel = UIManager.Instance.GetPanel(panelName);
+                if (basePanel == null)
+                {
+                    Debug.LogWarning($"Panel '{panelName}' not found in UIManager!");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("UIManager instance not found!");
+            }
+        }
+    }
     
     /// <summary>
     /// 初始化UI事件
@@ -181,66 +230,63 @@ public string sceneTextName = "SceneText";
 
     #region 文本发送相关方法
     
-    
-/// <summary>
-/// 发送文本到场景
-/// </summary>
-/// <param name="text">要发送的文本</param>
-private void SendTextToScene(string text)
-{
-    // 检查是否为命令（以/开头）
-    if (text.StartsWith("/"))
+    /// <summary>
+    /// 发送文本到场景
+    /// </summary>
+    /// <param name="text">要发送的文本</param>
+    private void SendTextToScene(string text)
     {
-        // 处理命令
-        ProcessCommand(text);
-        return;
-    }
-    
-    // 获取玩家名称
-    string playerName = "Unknown";
-    if (playerData != null)
-    {
-        playerName = playerData.playerName;
-    }
-    
-    // 通过Command发送文本到服务器，附加玩家名称
-    string formattedText = $"[{playerName}] {text}\n";
-    CmdAppendSceneText(formattedText);
-}
-
-// 其余方法保持不变...
-
-/// <summary>
-/// 客户端请求添加文本到场景文本
-/// </summary>
-/// <param name="text">要添加的文本</param>
-[Command]
-private void CmdAppendSceneText(string text)
-{
-    // 在服务器上更新所有客户端的场景文本
-    RpcUpdateSceneText(text);
-}
-
-/// <summary>
-/// 服务器向所有客户端广播文本更新
-/// </summary>
-/// <param name="text">要添加的文本</param>
-[ClientRpc]
-private void RpcUpdateSceneText(string text)
-{
-    // 在所有客户端上更新场景文本显示
-    if (basePanel != null)
-    {
-        // 获取文本组件并直接修改其文本属性
-        var sceneText = basePanel.GetText_Legacy(sceneTextName);
-        if (sceneText != null)
+        // 检查是否为命令（以/开头）
+        if (text.StartsWith("/"))
         {
-            sceneText.text += text;
+            // 处理命令
+            ProcessCommand(text);
+            return;
+        }
+        
+        // 获取玩家名称
+        string playerName = "Unknown";
+        if (playerData != null)
+        {
+            playerName = playerData.playerName;
+        }
+        
+        // 通过Command发送文本到服务器，附加玩家名称
+        string formattedText = $"[{playerName}] {text}\n";
+        CmdAppendSceneText(formattedText);
+    }
+
+    /// <summary>
+    /// 客户端请求添加文本到场景文本
+    /// </summary>
+    /// <param name="text">要添加的文本</param>
+    [Command]
+    private void CmdAppendSceneText(string text)
+    {
+        // 在服务器上更新所有客户端的场景文本
+        RpcUpdateSceneText(text);
+    }
+
+    /// <summary>
+    /// 服务器向所有客户端广播文本更新
+    /// </summary>
+    /// <param name="text">要添加的文本</param>
+    [ClientRpc]
+    private void RpcUpdateSceneText(string text)
+    {
+        // 在所有客户端上更新场景文本显示
+        if (basePanel != null)
+        {
+            // 获取文本组件并直接修改其文本属性
+            var sceneText = basePanel.GetText_Legacy(sceneTextName);
+            if (sceneText != null)
+            {
+                sceneText.text += text;
+            }
         }
     }
-}
 
-#endregion
+    #endregion
 
     #region 文本管理命令方法
     
@@ -374,6 +420,4 @@ private void RpcUpdateSceneText(string text)
     }
 
     #endregion
-
-
 }

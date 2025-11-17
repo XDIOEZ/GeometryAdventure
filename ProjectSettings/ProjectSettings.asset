@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: Tilapia
-  productName: "\u51E0\u4F55\u4F53\u7684\u5F02\u4E16\u754C\u5192\u9669"
+  productName: "\u51E0\u4F55\u5192\u9669"
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}

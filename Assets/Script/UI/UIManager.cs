@@ -86,7 +86,7 @@ public class UIManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"Duplicate panel name found: {panel.name}");
+               // Debug.LogWarning($"Duplicate panel name found: {panel.name}");
             }
         }
     }
@@ -221,9 +221,26 @@ public class UIManager : MonoBehaviour
         }
         else if (panel != null && panels.ContainsKey(panel.name))
         {
-            Debug.Log($"面板{panel.name}已经注册了哦");
+          //  Debug.Log($"面板{panel.name}已经注册了哦");
         }
     }
+
+    /// <summary>
+    /// 注册面板到UIManager
+    /// </summary>
+    /// <param name="panel">要注册的面板</param>
+    public void RegisterPanel(string panelName, BasePanel panel)
+    {
+        if (panel != null && !panels.ContainsKey(panelName))
+        {
+            panels[panelName] = panel;
+        }
+        else if (panel != null && panels.ContainsKey(panelName))
+        {
+         //   Debug.Log($"面板{panelName}已经注册了哦");
+        }
+    }
+
     #endregion
 
     #region Panel Creation and Destruction

@@ -31,21 +31,25 @@ public class Controller_Move : NetworkBehaviour
             InitializeInput();
         }
     }
-    
-    [Client]
-    private void Update()
+[Client]
+private void Update()
+{
+    // 在FixedUpdate中处理移动逻辑，确保物理计算的一致性
+    if (isLocalPlayer && IsClientReady())
     {
-        // 在FixedUpdate中处理移动逻辑，确保物理计算的一致性
-        if (isLocalPlayer && moveDirection != Vector2.zero)
-        {
-            ComMove();
-        }
-        else if (isLocalPlayer)
-        {
-            ComMove();
-        }
+        ComMove();
     }
-    
+}
+
+/// <summary>
+/// 检查客户端是否已准备就绪
+/// </summary>
+/// <returns>客户端是否准备就绪</returns>
+private bool IsClientReady()
+{
+    // 检查客户端是否已准备就绪
+    return NetworkClient.ready;
+}
     private void OnDestroy()
     {
         CleanupInput();
@@ -142,4 +146,5 @@ public class Controller_Move : NetworkBehaviour
     }
     
     #endregion
+
 }

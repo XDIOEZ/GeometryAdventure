@@ -317,7 +317,7 @@ public class BasePanel : MonoBehaviour
             return text;
         }
 
-        Debug.LogWarning($"未找到名为 {textName} 的文本组件");
+        //Debug.LogWarning($"未找到名为 {textName} 的文本组件");
         return null;
     }
 
