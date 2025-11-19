@@ -387,6 +387,7 @@ MonoBehaviour:
   isInvincible: 0
   invincibleDuration: 1
   playerSpriteRenderer: {fileID: 3219095672716850215}
+  conId: {fileID: 3030358618126151937}
   basePanel: {fileID: 3763098168212557782}
 --- !u!114 &7666443761639268376
 MonoBehaviour:

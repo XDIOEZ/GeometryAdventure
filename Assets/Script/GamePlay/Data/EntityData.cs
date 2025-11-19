@@ -5,7 +5,7 @@ using TMPro;
 using UltEvents;
 using UnityEngine;
 
-public class EntityData : NetworkBehaviour
+public class EntityData : NetworkBehaviour, ISaveLoad
 {
     #region 字段定义
 
@@ -37,10 +37,10 @@ public class EntityData : NetworkBehaviour
     public float invincibleDuration = 1.0f;
 
     public SpriteRenderer playerSpriteRenderer;
+    public ConId conId;
 
     // 记录无敌状态的协程，用于取消之前的无敌状态
     private Coroutine invincibleCoroutine;
-
 
     #endregion
 
@@ -78,18 +78,53 @@ public class EntityData : NetworkBehaviour
         UpdateAtkDisplay(attack);
         UpdateSpeedDisplay(speed);
     }
+
     public override void OnStartLocalPlayer()
     {
         if (isLocalPlayer)
         {
-            // 生成随机名称和颜色
-            string randomName = "Player" + Random.Range(1, 100);
-            Color randomColor = new Color(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f));
+            // 加载保存的数据
+            CmdLoadData(GetId());
+            
+            // 如果没有保存数据，则生成随机名称和颜色
+            if (string.IsNullOrEmpty(playerName) || playerName == "Entity")
+            {
+                string randomName = "Player" + Random.Range(1, 100);
+                Color randomColor = new Color(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f));
 
-            // 发送到服务器
-            CmdChangeName(randomName);
-            CmdChangeColor(randomColor);
+                // 发送到服务器
+                CmdChangeName(randomName);
+                CmdChangeColor(randomColor);
+            }
         }
+    }
+
+    [Command]
+    public void CmdLoadData(string id)
+    {
+        // 注册到SaveManager
+        SaveManager.instance.RegisterSaveObject(this);
+
+        // 加载数据
+        var data = SaveManager.instance.LoadData(id);
+        if (data == null)
+        {
+            Debug.Log("EntityData: No save data found.");
+            return;
+        }
+        RpcLoadData(data);
+    }
+
+    [ClientRpc]
+    public void RpcLoadData(string[] data)
+    {
+        Load(data);
+        // 更新UI显示
+        UpdateNameDisplay(playerName);
+        UpdateColorDisplay(playerColor);
+        UpdateHpDisplay(hp);
+        UpdateAtkDisplay(attack);
+        UpdateSpeedDisplay(speed);
     }
 
     #endregion
@@ -176,7 +211,7 @@ public class EntityData : NetworkBehaviour
         // 检查basePanel是否存在
         if (basePanel != null)
         {
-            // 直接获取TextMeshProUGUI组件并设置文本
+            // 直接获取Text组件并设置文本
             basePanel.GetText_Legacy("Name").text = name;
         }
         else
@@ -184,7 +219,6 @@ public class EntityData : NetworkBehaviour
             Debug.LogWarning("BasePanel is not assigned!");
         }
     }
-
 
     private void UpdateColorDisplay(Color color)
     {
@@ -199,10 +233,9 @@ public class EntityData : NetworkBehaviour
         }
     }
 
-  
     private void UpdateHpDisplay(int Hp)
     {
-        // 获取力量显示文本组件并设置文本
+        // 获取生命值显示文本组件并设置文本
          var strengthText = basePanel.GetText_Legacy("HP");
          if (strengthText != null)
          {
@@ -300,7 +333,6 @@ public class EntityData : NetworkBehaviour
         }
     }
 
-
     #endregion
 
     public void Die()
@@ -337,4 +369,65 @@ public class EntityData : NetworkBehaviour
         Die(); // 客户端执行视觉表现
     }
 
+    #region ISaveLoad接口实现
+
+    public string[] Save()
+    {
+        string[] data = new string[6];
+        data[0] = playerName; // 保存玩家名称
+        data[1] = $"{playerColor.r},{playerColor.g},{playerColor.b},{playerColor.a}"; // 保存颜色
+        data[2] = hp.ToString(); // 保存生命值
+        data[3] = attack.ToString(); // 保存攻击力
+        data[4] = speed.ToString(); // 保存速度
+        data[5] = isInvincible.ToString(); // 保存无敌状态
+        return data;
+    }
+
+    public void Load(string[] data)
+    {
+        if (data == null || data.Length < 6) return;
+
+        // 加载玩家名称
+        if (!string.IsNullOrEmpty(data[0]))
+            playerName = data[0];
+
+        // 加载颜色
+        string[] colorParts = data[1].Split(',');
+        if (colorParts.Length == 4)
+        {
+            float r = float.Parse(colorParts[0]);
+            float g = float.Parse(colorParts[1]);
+            float b = float.Parse(colorParts[2]);
+            float a = float.Parse(colorParts[3]);
+            playerColor = new Color(r, g, b, a);
+        }
+
+        // 加载生命值
+        hp = int.Parse(data[2]);
+
+        // 加载攻击力
+        attack = int.Parse(data[3]);
+
+        // 加载速度
+        speed = float.Parse(data[4]);
+
+        // 加载无敌状态
+        isInvincible = bool.Parse(data[5]);
+    }
+
+    public string GetId()
+    {
+        // 使用ConId获取唯一标识符，如果不存在则使用网络连接ID
+        if (conId != null)
+        {
+            return $"{conId.myConnectionId}_EntityData";
+        }
+        else if (isLocalPlayer)
+        {
+            return $"{NetworkClient.connection.connectionId}_EntityData";
+        }
+        return "Unknown_EntityData";
+    }
+
+    #endregion
 }

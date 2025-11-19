@@ -277,7 +277,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6431357517727165144}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -340,6 +340,7 @@ MonoBehaviour:
   isInvincible: 0
   invincibleDuration: 1
   playerSpriteRenderer: {fileID: 8648502573168455222}
+  conId: {fileID: 0}
   basePanel: {fileID: 1575864431667254589}
 --- !u!50 &6593281441741624058
 Rigidbody2D:
@@ -350,7 +351,7 @@ Rigidbody2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6431357517727165144}
   m_BodyType: 1
-  m_Simulated: 0
+  m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1

@@ -260,6 +260,7 @@ MonoBehaviour:
   isInvincible: 0
   invincibleDuration: 1
   playerSpriteRenderer: {fileID: 74319799813207014}
+  conId: {fileID: 0}
   basePanel: {fileID: 7344845969465069729}
 --- !u!50 &1609571667212589350
 Rigidbody2D:
