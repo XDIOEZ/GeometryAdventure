@@ -334,7 +334,7 @@ MonoBehaviour:
   jumpForce: 11.1
   groundLayerMask:
     serializedVersion: 2
-    m_Bits: 448
+    m_Bits: 960
   groundCheck: {fileID: 3440782868498967672}
   footSpacing: 0.47
   groundCheckDistance: 0.1

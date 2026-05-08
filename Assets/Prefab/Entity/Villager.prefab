@@ -508,6 +508,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f972c56206b0c64f84ae4a70419ff52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   dialogueDictionary:
     _serializedList:
     - Key: "\u9ED8\u8BA4"
